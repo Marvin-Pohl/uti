@@ -4,6 +4,8 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+template __declspec( dllexport ) class uti::UTFString<>;
+
 namespace utiTest
 {		
 	TEST_CLASS(UTF8Test)

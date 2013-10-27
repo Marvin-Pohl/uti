@@ -37,30 +37,53 @@ namespace uti
 	protected:
 	private:
 	};
-	class DefaultAllocator
+
+	class IAllocator
 	{
 	public:
 
-		inline void* Allocate( u32 size );
+		virtual void* AllocateBytes( u32 count ) = 0;
 
-		inline void Deallocate( void* ptr );
+		virtual void FreeBytes( void* ptr ) = 0;
+
+	protected:
+	private:
+	};
+
+	class DefaultAllocator : public IAllocator
+	{
+	public:
+
+		inline virtual void* AllocateBytes( u32 size );
+
+		inline virtual void FreeBytes( void* ptr );
 
 	protected:
 
 	private:
 	};
 
-	void* DefaultAllocator::Allocate( u32 size )
+	void* DefaultAllocator::AllocateBytes( u32 size )
 	{
 		return new char[ size ];
 	}
 
-	void DefaultAllocator::Deallocate( void* ptr )
+	void DefaultAllocator::FreeBytes( void* ptr )
 	{
 		delete ptr;
 	}
 
-	template < typename ch = unsigned char, typename Allocator = DefaultAllocator >
+	/**
+	\brief Class representing a valid UTF-8 string.
+
+	\c ch Is the type used for a single byte ( not a full UTF-8 char! ). 
+	The default is unsigned char which is ok for the most compilers.
+	You might want to change this parameter if you prefer to store the UTF-8 String in a specific way.
+
+	\c Allocator Is the class used to allocate the memory for the string
+	
+	*/
+	template < typename ch = unsigned char, typename Allocator = ::uti::DefaultAllocator >
 	class UTFString
 	{
 	public:
@@ -81,7 +104,7 @@ namespace uti
 	};
 
 	template < typename ch /*= unsigned char*/, typename Allocator /*= DefaultAllocator */>
-	bool uti::UTFString<ch, Allocator>::ValidUTF8Byte( const ch* utfchar )
+	bool UTFString<ch, Allocator>::ValidUTF8Byte( const ch* utfchar )
 	{
 		if ( utfchar == nullptr)
 		{
@@ -96,7 +119,7 @@ namespace uti
 	template < typename ch /*= unsigned char*/, typename Allocator /*= DefaultAllocator */>
 	UTFString<ch, Allocator>::UTFString( void )
 	{
-		m_pData = m_Alloc.Allocate( 1U );
+		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
 
 		*m_pData = 0;
 	}
@@ -112,7 +135,7 @@ namespace uti
 				throw InvalidCharException( size - 1 );
 			}
 		}
-		m_pData= static_cast< ch* >( m_Alloc.Allocate( size * sizeof( ch ) ) );
+		m_pData= static_cast< ch* >( m_Alloc.AllocateBytes( size * sizeof( ch ) ) );
 
 		for (u32 i = 0; i < size; i++)
 		{
@@ -126,7 +149,7 @@ namespace uti
 	{
 		if (m_pData)
 		{
-			m_Alloc.Deallocate( m_pData );
+			m_Alloc.FreeBytes( m_pData );
 		}
 	}
 }
