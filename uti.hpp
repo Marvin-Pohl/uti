@@ -3,10 +3,22 @@
 #ifndef uti_h__
 #define uti_h__
 
+#ifdef DISABLE_CPP11
+	#ifdef nullptr
+		#define OLD_NULLPTR nullptr
+		#undef nullptr
+	#endif // nullptr
+	#define nullptr NULL
+#endif // DISABLE_CPP11
+
+
 namespace uti
 {
 
 	typedef unsigned int u32;
+
+	template < typename ch , typename Allocator >
+	class UTFString;
 
 	class UTFException 
 		: public std::exception
@@ -28,8 +40,8 @@ namespace uti
 	{
 	public: 
 
-		inline InvalidCharException( int position ) :
-			UTFException( "Invalid char detected!", position )
+		inline InvalidCharException( u32 m_uiPosition ) : 
+		UTFException( "Invalid char detected!", ( int )m_uiPosition )
 		{
 
 		}
@@ -73,6 +85,57 @@ namespace uti
 		delete ptr;
 	}
 
+	template< typename ch = unsigned char, typename Allocator = ::uti::DefaultAllocator >
+	class UTFStringIterator
+	{
+	public:
+
+		typedef typename UTFString<ch,Allocator> String;
+		
+		/**
+		\brief Creates a new iterator for the UTF-String
+		
+		\param data the data of the string
+		\param m_uiPos The m_uiPos where to start the iteration
+		*/
+		UTFStringIterator( String& str, u32 m_uiPos );
+
+		UTFStringIterator( const UTFStringIterator< ch, Allocator >& it );
+
+		UTFStringIterator& operator =( const UTFStringIterator< ch, Allocator >& it );
+
+		ch& operator *();
+
+		bool Valid( void ) const;
+
+		bool operator ==( const UTFStringIterator< ch, Allocator>& rhs ) const;
+		bool operator !=( const UTFStringIterator< ch, Allocator>& rhs ) const;
+		bool operator <=( const UTFStringIterator< ch, Allocator>& rhs ) const;
+		bool operator <( const UTFStringIterator< ch, Allocator>& rhs ) const;
+		bool operator >=( const UTFStringIterator< ch, Allocator>& rhs ) const;
+		bool operator >( const UTFStringIterator< ch, Allocator>& rhs ) const;
+
+		UTFStringIterator< ch, Allocator>& operator ++( void );
+		UTFStringIterator< ch, Allocator> operator ++( int ) const;
+
+		~UTFStringIterator();
+
+
+	protected:
+	private:
+
+		UTFString< ch, Allocator>& m_String;
+		u32 m_uiPos;
+	};
+
+	template< typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTFStringIterator<ch, Allocator>& uti::UTFStringIterator<ch, Allocator>::operator=( const UTFStringIterator< ch, Allocator >& it )
+	{
+		m_String = it.m_String;
+		m_uiPos = m_uiPos;
+	}
+
+
 	/**
 	\brief Class representing a valid UTF-8 string.
 
@@ -88,20 +151,332 @@ namespace uti
 	{
 	public:
 
+		typedef const ch ConstType;
+		typedef ch Type;
+
+		typedef typename ::uti::UTFStringIterator< ch, Allocator > Iterator;
+
 		UTFString( void );
 
 		UTFString( const ch* text );
 
 		~UTFString();
 
+		
+		/**
+		\brief Returns a pointer to the data of the String.
+		
+		
+		\return The data of the string.
+		*/
+		ch* Data() const;
+
+		
+		/**
+		\brief Compatible implementation to the std::string
+		Returns a const type ptr to the data of the string
+		
+		\return A const pointer to the data
+		*/
+		const ch* c_str() const;
+
+		
+		/**
+		\brief Returns if the UTF-String is empty or not
+		
+		\return \c true if the string is empty or \c false if not
+		*/
+		bool Empty( void ) const;
+
+		bool operator ==( const UTFString& rhs ) const;
+		bool operator !=( const UTFString& rhs ) const;
+
+		UTFStringIterator<ch,Allocator> Begin( void ) const;
+		UTFStringIterator<ch,Allocator> End( void ) const;
+
+		/**
+		\brief Checks if the given Byte is in range of a valid UTF-8 Byte.
+		This does not necessarily makes an array of valid Bytes a valid UTF-8 char or string.
+		
+		\param utfchar The char to be tested
+		
+		\return \c true if the byte is valid, \c false otherwise
+		*/
 		static inline bool ValidUTF8Byte( const ch* utfchar );
+
+
+		friend class UTFStringIterator<ch,Allocator>;
 
 	protected: 
 	private:
 
 		ch* m_pData;
 		Allocator m_Alloc;
+		u32 m_uiSize;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// UTF String Iterator implemenation
+	//////////////////////////////////////////////////////////////////////////
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	UTFStringIterator<ch, Allocator> uti::UTFStringIterator<ch, Allocator>::operator++( int ) const
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if ( m_uiPos < m_String.m_uiSize )
+		{
+			UTFStringIterator it( *this );
+			return ++it;
+		}
+		else
+		{
+			throw UTFException( "Iterator not incrementable", 0 );
+		}
+#else
+
+		UTFStringIterator it( *this );
+		return ++it;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	UTFStringIterator<ch, Allocator>& uti::UTFStringIterator<ch, Allocator>::operator++( void )
+	{
+		m_uiPos++;
+		return *this;
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	bool uti::UTFStringIterator<ch,Allocator>::operator>( const UTFStringIterator<ch,Allocator>& rhs ) const
+	{
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if (m_String.m_pData != rhs.m_String.m_pData)
+		{
+			throw UTFException( "UTFIterator mismatch on > comparison", 0 );
+		}
+		else
+		{
+			return m_uiPos > rhs.m_uiPos;
+		}
+#else
+		return m_uiPos > rhs.m_uiPos;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	bool uti::UTFStringIterator<ch,Allocator>::operator>=( const UTFStringIterator<ch,Allocator>& rhs ) const
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if (m_String.m_pData != rhs.m_String.m_pData)
+		{
+			throw UTFException( "UTFIterator mismatch on >= comparison", 0 );
+		}
+		else
+		{
+			return m_uiPos >= rhs.m_uiPos;
+		}
+#else
+		return m_uiPos >= rhs.m_uiPos;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	bool uti::UTFStringIterator<ch,Allocator>::operator<( const UTFStringIterator<ch,Allocator>& rhs ) const
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if (m_String.m_pData != rhs.m_String.m_pData)
+		{
+			throw UTFException( "UTFIterator mismatch on < comparison", 0 );
+		}
+		else
+		{
+			return m_uiPos < rhs.m_uiPos;
+		}
+#else
+		return m_uiPos < rhs.m_uiPos;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	bool uti::UTFStringIterator<ch,Allocator>::operator<=( const UTFStringIterator<ch,Allocator>& rhs ) const
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if (m_String.m_pData != rhs.m_String.m_pData)
+		{
+			throw UTFException( "UTFIterator mismatch on <= comparison", 0 );
+		}
+		else
+		{
+			return m_uiPos <= rhs.m_uiPos;
+		}
+#else
+		return m_uiPos <= rhs.m_uiPos;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	bool uti::UTFStringIterator<ch,Allocator>::operator!=( const UTFStringIterator<ch,Allocator>& rhs ) const
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if (m_String.m_pData != rhs.m_String.m_pData)
+		{
+			throw UTFException( "UTFIterator mismatch on != comparison", 0 );
+		}
+		else
+		{
+			return m_uiPos != rhs.m_uiPos;
+		}
+#else
+		return m_uiPos != rhs.m_uiPos;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	bool uti::UTFStringIterator<ch,Allocator>::operator==( const UTFStringIterator<ch,Allocator>& rhs ) const
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if (m_String.m_pData != rhs.m_String.m_pData)
+		{
+			throw UTFException( "UTFIterator mismatch on == comparison", 0 );
+		}
+		else
+		{
+			return m_uiPos == rhs.m_uiPos;
+		}
+#else
+		return m_uiPos == rhs.m_uiPos;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	ch& uti::UTFStringIterator< ch, Allocator >::operator*()
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if ( Valid() )
+		{
+			return *(m_String.m_pData + m_uiPos);
+		}
+		else
+		{
+			throw UTFException( "Iterator not dereferenceable", 0 );
+		}
+#else
+		return *(m_String.m_pData + m_uiPos);
+#endif
+
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	bool uti::UTFStringIterator<ch,Allocator>::Valid( void ) const
+	{
+		return m_uiPos < m_String.m_uiSize;
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	uti::UTFStringIterator<ch,Allocator>::~UTFStringIterator()
+	{
+		m_uiPos = 0;
+	}
+
+	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
+	uti::UTFStringIterator<ch,Allocator>::UTFStringIterator( typename UTFStringIterator<ch,Allocator>::String& data, u32 m_uiPos ) :
+		m_String( data ),
+		m_uiPos( m_uiPos )
+	{
+	}
+
+	template< typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	uti::UTFStringIterator<ch, Allocator>::UTFStringIterator( const UTFStringIterator< ch, Allocator >& it ) :
+		m_String( it.m_String ),
+		m_uiPos( it.m_uiPos )
+	{
+
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// UTF String Implementation
+	//////////////////////////////////////////////////////////////////////////
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	typename UTFString<ch,Allocator>::Iterator uti::UTFString<ch, Allocator>::End( void ) const
+	{
+		return UTFString<ch,Allocator>::Iterator( (UTFString&)*this, m_uiSize );
+	}
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	typename UTFString<ch,Allocator>::Iterator uti::UTFString<ch, Allocator>::Begin( void ) const
+	{
+		return UTFString<ch,Allocator>::Iterator( (UTFString&)*this, 0U );
+	}
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	bool uti::UTFString<ch, Allocator>::operator!=( const UTFString& rhs ) const
+	{
+
+		if (m_uiSize != rhs.m_uiSize)
+		{
+			return true;
+		}
+
+		Iterator lStart = Begin();
+		Iterator rStart = rhs.Begin();
+		Iterator lEnd = End();
+		Iterator rEnd = rhs.End();
+
+		while ( lStart != lEnd && rStart != rEnd )
+		{
+			if (*(lStart++) != *(rStart++))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	bool uti::UTFString<ch, Allocator>::operator==( const UTFString& rhs ) const
+	{
+		if (m_uiSize != rhs.m_uiSize)
+		{
+			return false;
+		}
+
+		Iterator lStart = Begin();
+		Iterator rStart = rhs.Begin();
+		Iterator lEnd = End();
+		Iterator rEnd = rhs.End();
+
+		while ( lStart != lEnd && rStart != rEnd )
+		{
+			if (*(lStart++) != *(rStart++))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	bool uti::UTFString<ch, Allocator>::Empty( void ) const
+	{
+		return m_pData == nullptr || m_pData[ 0 ] == 0U;
+	}
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	const ch* uti::UTFString<ch, Allocator>::c_str() const
+	{
+		return m_pData;
+	}
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	ch* uti::UTFString<ch, Allocator>::Data() const
+	{
+		return m_pData;
+	}
 
 	template < typename ch /*= unsigned char*/, typename Allocator /*= DefaultAllocator */>
 	bool UTFString<ch, Allocator>::ValidUTF8Byte( const ch* utfchar )
@@ -122,6 +497,8 @@ namespace uti
 		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
 
 		*m_pData = 0;
+
+		m_uiSize = 1;
 	}
 
 	template < typename ch /*= unsigned char*/, typename Allocator /*= DefaultAllocator */>
@@ -132,7 +509,7 @@ namespace uti
 		{
 			if (!ValidUTF8Byte( text + size++ ))
 			{
-				throw InvalidCharException( size - 1 );
+				throw InvalidCharException( size - 1U );
 			}
 		}
 		m_pData= static_cast< ch* >( m_Alloc.AllocateBytes( size * sizeof( ch ) ) );
@@ -141,6 +518,8 @@ namespace uti
 		{
 			m_pData[ i ] = static_cast< ch >( text[ i ] );
 		}
+
+		m_uiSize = size;
 	}
 
 
@@ -151,7 +530,19 @@ namespace uti
 		{
 			m_Alloc.FreeBytes( m_pData );
 		}
+		m_uiSize = 0;
 	}
 }
+
+#ifdef DISABLE_CPP11
+	#undef nullptr
+		#ifdef OLD_NULLPTR
+			#define nullptr OLD_NULLPTR
+			#undef OLD_NULLPTR
+	#endif // OLD_NULLPTR
+
+#endif // DISABLE_CPP11
+
+
 
 #endif // uti_h__
