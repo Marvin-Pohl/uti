@@ -19,7 +19,7 @@ namespace utiTest
 			
 			try
 			{
-				const unsigned char blah[] = { 0xFF, 0xC0 };
+				const unsigned char blah[] = { 0xFFu, 0xC0 };
 				uti::UTFString<> string( blah );
 
 				Assert::Fail();
@@ -45,6 +45,34 @@ namespace utiTest
 				Assert::Fail();
 			}
 
+		}
+
+		TEST_METHOD(IteratorTest)
+		{
+			String bla((unsigned char*)"Test");
+			const unsigned char test[] = "Test";
+			unsigned int iterations = 0;
+			for (auto it = bla.Begin(); it != bla.End(); ++it, ++iterations )
+			{
+				Assert::AreEqual( *it, (unsigned char)test[iterations] );
+
+			}
+
+			Assert::AreEqual( iterations, 4U );
+		}
+
+		TEST_METHOD(ReverseIterator)
+		{
+			String bla((unsigned char*)"Test");
+			const char* test = "Test";
+			unsigned int iterations = 0;
+			for (auto it = bla.rBegin(); it != bla.rEnd(); ++it, ++iterations )
+			{
+				Assert::AreEqual((unsigned char)test[3U-iterations], *it );
+
+			}
+
+			Assert::AreEqual( iterations, 4U );
 		}
 
 	};

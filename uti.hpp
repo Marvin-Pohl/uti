@@ -90,7 +90,9 @@ namespace uti
 	{
 	public:
 
-		typedef typename UTFString<ch,Allocator> String;
+		typedef typename UTFString< typename ch,typename Allocator> String;
+
+		typedef typename ch DataType;
 		
 		/**
 		\brief Creates a new iterator for the UTF-String
@@ -118,6 +120,10 @@ namespace uti
 		UTFStringIterator< ch, Allocator>& operator ++( void );
 		UTFStringIterator< ch, Allocator> operator ++( int ) const;
 
+
+		UTFStringIterator< ch, Allocator>& operator --( void );
+		UTFStringIterator< ch, Allocator> operator --( int ) const;
+
 		~UTFStringIterator();
 
 
@@ -128,12 +134,41 @@ namespace uti
 		u32 m_uiPos;
 	};
 
-	template< typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
-	UTFStringIterator<ch, Allocator>& uti::UTFStringIterator<ch, Allocator>::operator=( const UTFStringIterator< ch, Allocator >& it )
+	template< typename Iterator >
+	class ReverseIterator_tpl
 	{
-		m_String = it.m_String;
-		m_uiPos = m_uiPos;
-	}
+	public:
+
+		ReverseIterator_tpl( const Iterator& it );
+
+		ReverseIterator_tpl( const ReverseIterator_tpl< Iterator >& it );
+
+		ReverseIterator_tpl< Iterator >& operator =( const ReverseIterator_tpl< Iterator >& it );
+		ReverseIterator_tpl< Iterator >& operator =( const Iterator& it );
+
+		typename Iterator::DataType& operator *();
+
+		bool Valid( void ) const;
+
+		bool operator ==( const ReverseIterator_tpl< Iterator >& rhs ) const;
+		bool operator !=( const ReverseIterator_tpl< Iterator >& rhs ) const;
+		bool operator <=( const ReverseIterator_tpl< Iterator >& rhs ) const;
+		bool operator <( const ReverseIterator_tpl< Iterator >& rhs ) const;
+		bool operator >=( const ReverseIterator_tpl< Iterator >& rhs ) const;
+		bool operator >( const ReverseIterator_tpl< Iterator >& rhs ) const;
+
+		ReverseIterator_tpl< Iterator >& operator ++( void );
+		ReverseIterator_tpl< Iterator > operator ++( int ) const;
+
+
+		ReverseIterator_tpl< Iterator >& operator --( void );
+		ReverseIterator_tpl< Iterator > operator --( int ) const;
+
+	protected:
+	private:
+
+		Iterator m_It;
+	};
 
 
 	/**
@@ -155,6 +190,7 @@ namespace uti
 		typedef ch Type;
 
 		typedef typename ::uti::UTFStringIterator< ch, Allocator > Iterator;
+		typedef typename ::uti::ReverseIterator_tpl< typename Iterator > ReverseIterator;
 
 		UTFString( void );
 
@@ -191,8 +227,11 @@ namespace uti
 		bool operator ==( const UTFString& rhs ) const;
 		bool operator !=( const UTFString& rhs ) const;
 
-		UTFStringIterator<ch,Allocator> Begin( void ) const;
-		UTFStringIterator<ch,Allocator> End( void ) const;
+		Iterator Begin( void ) const;
+		Iterator End( void ) const;
+
+		ReverseIterator rBegin( void ) const;
+		ReverseIterator rEnd( void ) const;
 
 		/**
 		\brief Checks if the given Byte is in range of a valid UTF-8 Byte.
@@ -219,6 +258,54 @@ namespace uti
 	// UTF String Iterator implemenation
 	//////////////////////////////////////////////////////////////////////////
 
+	template< typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTFStringIterator< ch, Allocator> uti::UTFStringIterator<ch, Allocator>::operator--( int ) const
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if ( m_uiPos > 0 )
+		{
+			UTFStringIterator it( *this );
+			return --it;
+		}
+		else
+		{
+			throw UTFException( "Iterator not decrementable", 0 );
+		}
+#else
+
+		UTFStringIterator it( *this );
+		return --it;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+	}
+
+	template< typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTFStringIterator< ch, Allocator>& uti::UTFStringIterator<ch, Allocator>::operator--( void )
+	{
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if ( m_uiPos > 0 )
+		{
+			--m_uiPos;
+			return *this;
+		}
+		else
+		{
+			throw UTFException( "Iterator not decrementable", 0 );
+		}
+#else
+
+		--m_uiPos;
+		return *this;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+	}
+
+	template< typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTFStringIterator<ch, Allocator>& uti::UTFStringIterator<ch, Allocator>::operator=( const UTFStringIterator< ch, Allocator >& it )
+	{
+		m_String = it.m_String;
+		m_uiPos = m_uiPos;
+	}
+
 	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
 	UTFStringIterator<ch, Allocator> uti::UTFStringIterator<ch, Allocator>::operator++( int ) const
 	{
@@ -242,8 +329,21 @@ namespace uti
 	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
 	UTFStringIterator<ch, Allocator>& uti::UTFStringIterator<ch, Allocator>::operator++( void )
 	{
-		m_uiPos++;
+#if _ITERATOR_DEBUG_LEVEL == 2
+		if ( m_uiPos < m_String.m_uiSize )
+		{
+			++m_uiPos;
+			return *this;
+		}
+		else
+		{
+			throw UTFException( "Iterator not incrementable", 0 );
+		}
+#else
+
+		++m_uiPos;
 		return *this;
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 	}
 
 	template< typename ch /*= unsigned char */, typename Allocator /* = ::uit::DefaultAllocator */>
@@ -396,8 +496,130 @@ namespace uti
 	}
 
 	//////////////////////////////////////////////////////////////////////////
+	// Reverse Iterator Implementation
+	//////////////////////////////////////////////////////////////////////////
+
+	template< typename Iterator >
+	ReverseIterator_tpl< Iterator > uti::ReverseIterator_tpl<Iterator>::operator--( int ) const
+	{
+		ReverseIterator_tpl< Iterator > copy(*this);
+		return --copy;
+	}
+
+	template< typename Iterator >
+	ReverseIterator_tpl< Iterator >& uti::ReverseIterator_tpl<Iterator>::operator--( void )
+	{
+		++m_It;
+		return *this;
+	}
+
+	template< typename Iterator >
+	ReverseIterator_tpl< Iterator > uti::ReverseIterator_tpl<Iterator>::operator++( int ) const
+	{
+
+		ReverseIterator_tpl< Iterator > copy(*this);
+		return ++copy;
+	}
+
+	template< typename Iterator >
+	ReverseIterator_tpl< Iterator >& uti::ReverseIterator_tpl<Iterator>::operator++( void )
+	{
+		--m_It;
+		return *this;
+	}
+
+	template< typename Iterator >
+	bool uti::ReverseIterator_tpl<Iterator>::operator>( const ReverseIterator_tpl< Iterator >& rhs ) const
+	{
+		return m_It < rhs.m_It;
+	}
+
+	template< typename Iterator >
+	bool uti::ReverseIterator_tpl<Iterator>::operator>=( const ReverseIterator_tpl< Iterator >& rhs ) const
+	{
+		return m_It <= rhs.m_It;
+	}
+
+	template< typename Iterator >
+	bool uti::ReverseIterator_tpl<Iterator>::operator<( const ReverseIterator_tpl< Iterator >& rhs ) const
+	{
+		return m_It > rhs.m_It;
+	}
+
+	template< typename Iterator >
+	bool uti::ReverseIterator_tpl<Iterator>::operator<=( const ReverseIterator_tpl< Iterator >& rhs ) const
+	{
+		return m_It >= ths.m_It;
+	}
+
+	template< typename Iterator >
+	bool uti::ReverseIterator_tpl<Iterator>::operator!=( const ReverseIterator_tpl< Iterator >& rhs ) const
+	{
+		return m_It != rhs.m_It;
+	}
+
+	template< typename Iterator >
+	bool uti::ReverseIterator_tpl<Iterator>::operator==( const ReverseIterator_tpl< Iterator >& rhs ) const
+	{
+		return m_It == rhs.m_It;
+	}
+
+	template< typename Iterator >
+	bool uti::ReverseIterator_tpl<Iterator>::Valid( void ) const
+	{
+		return m_It.Valid();
+	}
+
+	template< typename Iterator >
+	typename Iterator::DataType& uti::ReverseIterator_tpl<Iterator>::operator*()
+	{
+		Iterator copy( m_It );
+		return *( --copy );
+	}
+
+	template< typename Iterator >
+	ReverseIterator_tpl< Iterator >& uti::ReverseIterator_tpl<Iterator>::operator=( const Iterator& it )
+	{
+		m_It = it;
+		return *this;
+	}
+
+	template< typename Iterator >
+	ReverseIterator_tpl< Iterator >& uti::ReverseIterator_tpl<Iterator>::operator=( const ReverseIterator_tpl< Iterator >& it )
+	{
+		m_It = it.m_It;
+		return *this;
+	}
+
+	template< typename Iterator >
+	uti::ReverseIterator_tpl<Iterator>::ReverseIterator_tpl( const ReverseIterator_tpl< Iterator >& it ) :
+		m_It( it.m_It )
+	{
+
+	}
+
+	template< typename Iterator >
+	uti::ReverseIterator_tpl<Iterator>::ReverseIterator_tpl( const Iterator& it ) :
+		m_It( it )
+	{
+
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 	// UTF String Implementation
 	//////////////////////////////////////////////////////////////////////////
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	typename UTFString<ch, Allocator>::ReverseIterator uti::UTFString<ch, Allocator>::rEnd( void ) const
+	{
+		return ReverseIterator( Begin() );
+	}
+
+	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	typename UTFString<ch, Allocator>::ReverseIterator uti::UTFString<ch, Allocator>::rBegin( void ) const
+	{
+		return ReverseIterator( End() );
+	}
 
 	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	typename UTFString<ch,Allocator>::Iterator uti::UTFString<ch, Allocator>::End( void ) const
