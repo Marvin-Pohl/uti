@@ -16,3 +16,5 @@
 *.sdf
 uti/utiTest/Debug/
 uti/utiTest/Release/
+*.suo
+*.vcxproj.user

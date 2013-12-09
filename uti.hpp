@@ -243,6 +243,8 @@ namespace uti
 		*/
 		static inline bool ValidUTF8Byte( const ch* utfchar );
 
+		static inline int ValidUTF8Char(const ch* utfChar);
+
 
 		friend class UTFStringIterator<ch,Allocator>;
 
@@ -608,6 +610,40 @@ namespace uti
 	//////////////////////////////////////////////////////////////////////////
 	// UTF String Implementation
 	//////////////////////////////////////////////////////////////////////////
+
+	template< typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefualtAllocator*/ >
+	int uti::UTFString<ch, Allocator >::ValidUTF8Char(const ch* utfchar)
+	{
+		
+		int numBytes;
+		if ((*utfchar & 0x80) == 0)
+		{
+			return ValidUTF8Byte( utfchar ) ? 1 : 0;
+		}
+		else if ((*utfchar & 0xE0) == 0xC0)
+		{
+			numBytes = 2;
+		}
+		else if ((*utfchar & 0xF0) == 0xE0)
+		{
+			numBytes = 3;
+		}
+		else if ((*utfchar & 0xF8) == 0xF0)
+		{
+			numBytes = 4;
+		}
+		else
+		{
+			numBytes = 0;
+		}
+		bool result = ValidUTF8Byte( utfchar );
+		for (int i = 1; result && i < numBytes; ++i)
+		{
+			result = result && ValidUTF8Byte( utfchar + i ) && (utfchar[i] & 0xC0) == 0x80;
+		}
+
+		return numBytes;
+	}
 
 	template < typename ch /*= unsigned char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	typename UTFString<ch, Allocator>::ReverseIterator uti::UTFString<ch, Allocator>::rEnd( void ) const
