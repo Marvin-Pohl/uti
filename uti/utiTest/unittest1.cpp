@@ -45,6 +45,32 @@ namespace utiTest
 				Assert::Fail();
 			}
 
+			try
+			{
+				const unsigned char test [] = "Some Test";
+
+				String string1 = test;
+				String string2 = string1;
+
+				String string3;
+				string3 = string2;
+
+				Assert::IsTrue( string1 == string2 );
+				Assert::IsTrue( string2 == string3 );
+				unsigned int iterations = 0;
+				for( auto it = string3.Begin(); it != string3.End(); ++it, ++iterations )
+				{
+					Assert::AreEqual( *it, ( unsigned char ) test[ iterations ] );
+
+				}
+
+				Assert::AreEqual( 9U,  iterations );
+			}
+			catch( ... )
+			{
+				Assert::Fail();
+			}
+
 		}
 
 		TEST_METHOD(IteratorTest)
@@ -58,7 +84,7 @@ namespace utiTest
 
 			}
 
-			Assert::AreEqual( iterations, 4U );
+			Assert::AreEqual( 4U, iterations );
 		}
 
 		TEST_METHOD(ReverseIterator)
@@ -72,7 +98,7 @@ namespace utiTest
 
 			}
 
-			Assert::AreEqual( iterations, 4U );
+			Assert::AreEqual( 4U, iterations );
 		}
 
 	};

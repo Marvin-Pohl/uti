@@ -18,3 +18,4 @@ uti/utiTest/Debug/
 uti/utiTest/Release/
 *.suo
 *.vcxproj.user
+uti/utiTest/TestResults/
