@@ -4,9 +4,9 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-template __declspec( dllexport ) class uti::UTFString<>;
+template __declspec( dllexport ) class uti::UTFString< >;
 
-typedef uti::UTFString<> String;
+typedef uti::UTFString< > String;
 
 namespace utiTest
 {		
@@ -19,13 +19,11 @@ namespace utiTest
 			
 			try
 			{
-				const unsigned char blah[] = { 0xFFu, 0xC0 };
-				uti::UTFString<> string( blah );
+				String::ReplacementChar = "<";
+				const char blah[] = { 0xFFu, 0xC0u, 0x00 };
+				String string( blah );
 
-				Assert::Fail();
-			}
-			catch (uti::InvalidCharException&)
-			{
+				Assert::AreEqual( '<', string.c_str()[ 0 ] );
 			}
 			catch( ... )
 			{
@@ -35,9 +33,9 @@ namespace utiTest
 
 			try
 			{
-				const unsigned char blah[] = "Some Test";
+				const char blah[] = "Some Test";
 
-				uti::UTFString<> string(blah);
+				String string(blah);
 
 			}
 			catch( ... )
@@ -47,7 +45,7 @@ namespace utiTest
 
 			try
 			{
-				const unsigned char test [] = "Some Test";
+				const char test [] = "Some Test";
 
 				String string1 = test;
 				String string2 = string1;
@@ -60,7 +58,7 @@ namespace utiTest
 				unsigned int iterations = 0;
 				for( auto it = string3.Begin(); it != string3.End(); ++it, ++iterations )
 				{
-					Assert::AreEqual( *it, ( unsigned char ) test[ iterations ] );
+					Assert::AreEqual( *it, test[ iterations ] );
 
 				}
 
@@ -75,12 +73,12 @@ namespace utiTest
 
 		TEST_METHOD(IteratorTest)
 		{
-			String bla((unsigned char*)"Test");
-			const unsigned char test[] = "Test";
+			String bla("Test");
+			const char test[] = "Test";
 			unsigned int iterations = 0;
 			for (auto it = bla.Begin(); it != bla.End(); ++it, ++iterations )
 			{
-				Assert::AreEqual( *it, (unsigned char)test[iterations] );
+				Assert::AreEqual( *it, test[iterations] );
 
 			}
 
@@ -89,12 +87,12 @@ namespace utiTest
 
 		TEST_METHOD(ReverseIterator)
 		{
-			String bla((unsigned char*)"Test");
+			String bla("Test");
 			const char* test = "Test";
 			unsigned int iterations = 0;
 			for (auto it = bla.rBegin(); it != bla.rEnd(); ++it, ++iterations )
 			{
-				Assert::AreEqual((unsigned char)test[3U-iterations], *it );
+				Assert::AreEqual(test[3U-iterations], *it );
 
 			}
 
