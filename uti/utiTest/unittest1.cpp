@@ -8,6 +8,19 @@ template __declspec( dllexport ) class uti::UTFString< >;
 
 typedef uti::UTFString< > String;
 
+//template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString( String* str )
+//{
+//	RETURN_WIDE_STRING( str->c_str() );
+//}
+template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString( const String& str )
+{
+	RETURN_WIDE_STRING( str.c_str() );
+}
+//template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString(const String* str )
+//{
+//	RETURN_WIDE_STRING( str->c_str() );
+//}
+
 namespace utiTest
 {		
 	TEST_CLASS(UTF8Test)
@@ -19,11 +32,17 @@ namespace utiTest
 			
 			try
 			{
-				String::ReplacementChar = "<";
+				String::ReplacementChar = "|";
 				const char blah[] = { 0xFFu, 0xC0u, 0x00 };
 				String string( blah );
 
-				Assert::AreEqual( '<', string.c_str()[ 0 ] );
+				Assert::AreEqual( '|', string.c_str()[ 0 ] );
+
+				const char excpected [] = "||";
+
+				String test( excpected );
+
+				Assert::AreEqual( test, string );
 			}
 			catch( ... )
 			{

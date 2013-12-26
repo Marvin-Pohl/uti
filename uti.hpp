@@ -268,6 +268,8 @@ namespace uti
 		*/
 		const ch* c_str() const;
 
+		u32 Size( void ) const;
+
 
 		/**
 		\brief Returns if the UTF-String is empty or not
@@ -873,8 +875,13 @@ namespace uti
 	}
 
 
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTFString<ch, Allocator>::Size( void ) const
+	{
+		return m_uiSize;
+	}
 
-	template< typename ch /*= char*/, typename Allocator /*= ::uti::DefualtAllocator*/ >
+	template< typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */ >
 	int UTFString<ch, Allocator >::ValidUTF8Char( const ch* utfchar )
 	{
 
@@ -905,7 +912,14 @@ namespace uti
 			result = result && ValidUTF8Byte( utfchar + i ) && ( utfchar[ i ] & 0xC0 ) == 0x80;
 		}
 
-		return numBytes;
+		if( !result )
+		{
+			return 0U;
+		}
+		else
+		{
+			return numBytes;
+		}
 	}
 
 
