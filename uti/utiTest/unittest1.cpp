@@ -118,5 +118,15 @@ namespace utiTest
 			Assert::AreEqual( 4U, iterations );
 		}
 
+		TEST_METHOD( ConcatTest )
+		{
+			String first( "Some" );
+			String second( "Test" );
+			String expected( "SomeTest" );
+
+			//Assert::IsTrue( first == String( "first" ) );
+			Assert::IsTrue( ( first + second ) == expected, (ToString( first  + second ) + ToString( " does not match " ) + ToString( expected)).c_str() );
+		}
+
 	};
 }

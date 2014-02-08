@@ -50,6 +50,15 @@ namespace uti
 	private:
 	};
 
+	/**
+	\brief Basic Interface for any custom Allocator for the UTFString class.
+	To use a custom Allocator write a subclass of IAllocator and pass it as second parameter of the UTFString template arguments.
+
+	The Allocator is intended to work like a proxy allocator, which means it should be lightweight, 
+	because any instance of the UTFString contains a copy of the Allocator.
+	Therefore it is recommended to access the actual Allocator using a static or global definition.
+	
+	*/
 	class IAllocator
 	{
 	public:
@@ -62,6 +71,10 @@ namespace uti
 	private:
 	};
 
+	/**
+	\brief Default implementation for the UTFString allocator, 
+	which utilizes new and delete directly to allocate and deallocate Memory.
+	*/
 	class DefaultAllocator : public IAllocator
 	{
 	public:
@@ -75,6 +88,10 @@ namespace uti
 	private:
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+	// Default Allocator implementation
+	//////////////////////////////////////////////////////////////////////////
+
 	void* DefaultAllocator::AllocateBytes( u32 size )
 	{
 		return new char[ size ];
@@ -85,6 +102,10 @@ namespace uti
 		delete ptr;
 	}
 
+	/**
+	\brief Reference Counter class for copy on write functionality of the UTFString.
+	
+	*/
 	template< typename T, typename Allocator >
 	class ReferenceCounted
 	{
@@ -154,7 +175,7 @@ namespace uti
 
 		UTFByteIterator& operator =( const UTFByteIterator< ch, Allocator >& it );
 
-		ch& operator *( );
+		ch& operator *( void );
 
 		bool Valid( void ) const;
 
@@ -252,6 +273,18 @@ namespace uti
 		UTFString< ch, Allocator>& operator =( const UTFString< ch, Allocator>& rhs );
 		UTFString< ch, Allocator>& operator =( const ch* rhs );
 
+		UTFString< ch, Allocator>& operator +=( const UTFString<ch, Allocator>& rhs );
+		UTFString< ch, Allocator> operator +( const UTFString<ch, Allocator>& rhs ) const;
+
+		/**
+		\brief Appends the given string \c rhs to this string at the End.
+		
+		The new Size of the resulting string will be the this->Size() + rhs.Size()
+
+		\return The new Size of the string.
+		*/
+		u32 Concat( const UTFString<ch, Allocator>& rhs );
+
 
 		/**
 		\brief Returns a pointer to the data of the String.
@@ -322,7 +355,7 @@ namespace uti
 		*/
 		static inline bool ValidUTF8Byte( const ch* utfchar );
 
-		static inline int ValidUTF8Char( const ch* utfChar );
+		static inline u32 ValidUTF8Char( const ch* utfChar );
 
 		friend class UTFByteIterator<ch, Allocator>;
 
@@ -515,7 +548,7 @@ namespace uti
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// UTF String Iterator implemenation
+	// UTF String Iterator implementation
 	//////////////////////////////////////////////////////////////////////////
 
 	template< typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
@@ -914,11 +947,48 @@ namespace uti
 		return m_uiSize;
 	}
 
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTFString<ch, Allocator>::Concat( const UTFString<ch, Allocator>& rhs )
+	{
+		u32 newSize = m_uiSize + rhs.m_uiSize;
+		DataType newStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize + 1 ) );
+
+		u32 newPos = 0;
+		for( u32 i = 0; i < m_uiSize; ++i )
+		{
+			newStringData[ newPos++ ] = m_pData[ i ];
+		}
+		for( u32 i = 0; i < rhs.m_uiSize; ++i )
+		{
+			newStringData[ newPos++ ] = rhs.m_pData[ i ];
+		}
+		newStringData[ newSize ] = 0U;
+		m_pData = newStringData;
+		m_uiSize = newSize;
+		return newSize;
+	}
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTFString< ch, Allocator> uti::UTFString<ch, Allocator>::operator+( const UTFString<ch, Allocator>& rhs ) const
+	{
+		UTFString< ch, Allocator> newString( *this );
+		newString.Concat( rhs );
+		return newString;
+	}
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTFString< ch, Allocator>& uti::UTFString<ch, Allocator>::operator+=( const UTFString<ch, Allocator>& rhs )
+	{
+		Concat( rhs );
+		return *this;
+	}
+
 	template< typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */ >
-	int UTFString<ch, Allocator >::ValidUTF8Char( const ch* utfchar )
+	u32 UTFString<ch, Allocator >::ValidUTF8Char( const ch* utfchar )
 	{
 
-		int numBytes;
+		u32 numBytes;
 		if( ( *utfchar & 0x80 ) == 0 )
 		{
 			return ValidUTF8Byte( utfchar ) ? 1 : 0;
@@ -940,7 +1010,7 @@ namespace uti
 			numBytes = 0;
 		}
 		bool result = ValidUTF8Byte( utfchar );
-		for( int i = 1; result && i < numBytes; ++i )
+		for( u32 i = 1; result && i < numBytes; ++i )
 		{
 			result = result && ValidUTF8Byte( utfchar + i ) && ( utfchar[ i ] & 0xC0 ) == 0x80;
 		}
