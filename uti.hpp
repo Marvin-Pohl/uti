@@ -117,6 +117,8 @@ namespace uti
 
 		bool Null( void ) const;
 
+		u32 Count( void ) const;
+
 	private:
 
 		void IncRef( void );
@@ -268,6 +270,9 @@ namespace uti
 		*/
 		const ch* c_str() const;
 
+		/**
+		\brief Returns the size of the string without the '0' at the end, so the actual allocated size is \c Size() \c + \c 1
+		*/
 		u32 Size( void ) const;
 
 
@@ -281,10 +286,28 @@ namespace uti
 		bool operator ==( const UTFString& rhs ) const;
 		bool operator !=( const UTFString& rhs ) const;
 
+		/**
+		\brief Returns an iterator to the start of the string,
+		which iterates until the end of the string.
+		*/
 		Iterator Begin( void ) const;
+		/**
+		\brief Returns an iterator to the end of the string. 
+		Useful for comparison with an iterator currently iterating
+		*/
 		Iterator End( void ) const;
 
+		/**
+		\brief Returns a reverse iterator to the end of the string, 
+		which iterates towards the start of the string.
+
+		*/
 		ReverseIterator rBegin( void ) const;
+		
+		/**
+		\brief Returns a reverse iterator to the start of the string. 
+		Useful for comparison with a reverse iterator currently iterating.
+		*/
 		ReverseIterator rEnd( void ) const;
 
 		void CopyConstChar( const ch* text );
@@ -343,6 +366,19 @@ namespace uti
 	}
 
 	template< typename T, typename Allocator >
+	u32 ReferenceCounted< T, Allocator>::Count( void ) const
+	{
+		if( m_Count != nullptr )
+		{
+			return *m_Count;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	template< typename T, typename Allocator >
 	bool ReferenceCounted< T, Allocator >::Valid( void ) const
 	{
 		return m_CountedPointer != nullptr;
@@ -394,14 +430,11 @@ namespace uti
 	template< typename T, typename Allocator >
 	ReferenceCounted< T, Allocator >::ReferenceCounted( const ReferenceCounted< T, Allocator >& refCount )
 	{
-		//DecRef();
 
-		//this = &refCount;
 		m_Count = refCount.m_Count;
 		m_CountedPointer = refCount.m_CountedPointer;
 
 		IncRef();
-
 	}
 
 	template< typename T, typename Allocator >
