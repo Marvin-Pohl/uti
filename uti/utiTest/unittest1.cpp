@@ -23,17 +23,17 @@ template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString(
 
 namespace utiTest
 {		
-	TEST_CLASS(UTF8Test)
+	TEST_CLASS( UTF8Test )
 	{
 	public:
-		
-		TEST_METHOD(CTorTest)
+
+		TEST_METHOD( CTorTest )
 		{
-			
+
 			try
 			{
 				String::ReplacementChar = "|";
-				const char blah[] = { 0xFFu, 0xC0u, 0x00 };
+				const char blah [] = { 0xFFu, 0xC0u, 0x00 };
 				String string( blah );
 
 				Assert::AreEqual( '|', string.c_str()[ 0 ] );
@@ -52,9 +52,9 @@ namespace utiTest
 
 			try
 			{
-				const char blah[] = "Some Test";
+				const char blah [] = "Some Test";
 
-				String string(blah);
+				String string( blah );
 
 			}
 			catch( ... )
@@ -81,7 +81,7 @@ namespace utiTest
 
 				}
 
-				Assert::AreEqual( 9U,  iterations );
+				Assert::AreEqual( 9U, iterations );
 			}
 			catch( ... )
 			{
@@ -90,28 +90,28 @@ namespace utiTest
 
 		}
 
-		TEST_METHOD(IteratorTest)
+		TEST_METHOD( IteratorTest )
 		{
-			String bla("Test");
-			const char test[] = "Test";
+			String bla( "Test" );
+			const char test [] = "Test";
 			unsigned int iterations = 0;
-			for (auto it = bla.Begin(); it != bla.End(); ++it, ++iterations )
+			for( auto it = bla.Begin(); it != bla.End(); ++it, ++iterations )
 			{
-				Assert::AreEqual( *it, test[iterations] );
+				Assert::AreEqual( *it, test[ iterations ] );
 
 			}
 
 			Assert::AreEqual( 4U, iterations );
 		}
 
-		TEST_METHOD(ReverseIterator)
+		TEST_METHOD( ReverseIterator )
 		{
-			String bla("Test");
+			String bla( "Test" );
 			const char* test = "Test";
 			unsigned int iterations = 0;
-			for (auto it = bla.rBegin(); it != bla.rEnd(); ++it, ++iterations )
+			for( auto it = bla.rBegin(); it != bla.rEnd(); ++it, ++iterations )
 			{
-				Assert::AreEqual(test[3U-iterations], *it );
+				Assert::AreEqual( test[ 3U - iterations ], *it );
 
 			}
 
@@ -125,7 +125,14 @@ namespace utiTest
 			String expected( "SomeTest" );
 
 			//Assert::IsTrue( first == String( "first" ) );
-			Assert::IsTrue( ( first + second ) == expected, (ToString( first  + second ) + ToString( " does not match " ) + ToString( expected)).c_str() );
+			Assert::IsTrue( ( first + second ) == expected, ( ToString( first + second ) + ToString( " does not match " ) + ToString( expected ) ).c_str() );
+		}
+
+		TEST_METHOD( ValidityTest )
+		{
+			char surrogate [] = { 0xd8U, 0x00U };
+
+			Assert::AreEqual( String::ValidUTF8Char( surrogate ), 0U );
 		}
 
 	};

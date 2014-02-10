@@ -357,6 +357,8 @@ namespace uti
 
 		static inline u32 ValidUTF8Char( const ch* utfChar );
 
+		static inline u32 ExtractCodePointFromUTF8( const ch* utfchar );
+
 		friend class UTFByteIterator<ch, Allocator>;
 
 		static ch* ReplacementChar;
@@ -949,6 +951,57 @@ namespace uti
 
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTFString<ch, Allocator>::ExtractCodePointFromUTF8( const ch* utfchar )
+	{
+		u32 length = ValidUTF8Char( utfchar );
+		if( length == 0U )
+		{
+			return length;
+		}
+		else
+		{
+			//Extract code point by filtering out the continuation and byte count marks and shifting the code points value together.
+			
+			u32 result = 0U;
+			switch( length )
+			{
+			// Easiest case BXXXXXXX; we want the Xes, but B is always 0 so simply return the value.
+			case 1U:
+				result = *utfchar;
+			// Second case is BBBXXXXX BBXXXXXX, so we filter the second byte by 0x3FU.
+			// Then filter the first by 0x1FU and shift it 6 bits to the left, to attach it to the second value
+			case 2U:
+				result = utfchar[ 1U ] & ( ch ) 0x3FU; // Extract lower value, filtering continuation part
+				result |= ( ( u32 ) ( utfchar[ 0U ] & ( ch ) 0x1FU ) ) << 6U; // Add upper value, filtering 2 byte mark
+				break;
+			// Third case is BBBBXXXX BBXXXXXX BBXXXXXX, so we filter the third byte by 0x3FU.
+			// Then filter the second by 0x3FU and shift it 6 bits to the left, to attach it to the output value
+			// Then filter the first by 0x0FU and shift it 12 bits to the left, to attach it to the output value
+			case 3U:
+				result = utfchar[ 2U ] & ( ch ) 0x3FU;
+				result |= ( ( u32 ) ( utfchar[ 1U ] & ( ch ) 0x3FU ) ) << 6U;
+				result |= ( ( u32 ) ( utfchar[ 0U ] & ( ch ) 0x0FU ) ) << 12U;
+				break;	  
+			// Fourth case is BBBBBXXX BBXXXXXX BBXXXXXX BBXXXXXX, so we filter the fourth byte by 0x3FU.
+			// Then filter the third by 0x3FU and shift it 6 bits to the left, to attach it to the output value
+			// Then filter the second by 0x3FU and shift it 6 bits to the left, to attach it to the output value
+			// Then filter the first by 0x007U and shift it 18 bits to the left, to attach it to the output value
+			case 4U:
+				result = utfchar[ 3U ] & ( ch ) 0x3FU;
+				result |= ( ( u32 ) ( utfchar[ 2U ] & ( ch ) 0x3FU ) ) << 6U;
+				result |= ( ( u32 ) ( utfchar[ 1U ] & ( ch ) 0x3FU ) ) << 12U;
+				result |= ( ( u32 ) ( utfchar[ 0U ] & ( ch ) 0x07U ) ) << 18U;
+				break;
+			default:
+				break;
+			}
+			return result;
+		}
+	}
+
+
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	u32 uti::UTFString<ch, Allocator>::Concat( const UTFString<ch, Allocator>& rhs )
 	{
 		u32 newSize = m_uiSize + rhs.m_uiSize;
@@ -989,19 +1042,21 @@ namespace uti
 	{
 
 		u32 numBytes;
-		if( ( *utfchar & 0x80 ) == 0 )
+		bool result = true;
+		if( ( *utfchar & ( ch ) 0x80U ) == 0 )
 		{
 			return ValidUTF8Byte( utfchar ) ? 1 : 0;
 		}
-		else if( ( *utfchar & 0xE0 ) == 0xC0 )
+		else if( ( *utfchar & ( ch ) 0xE0U ) == ( ch ) 0xC0U )
 		{
 			numBytes = 2;
+			result = result && ( *utfchar < ( ch ) 0xD8U || *utfchar >( ch )0xDFU );
 		}
-		else if( ( *utfchar & 0xF0 ) == 0xE0 )
+		else if( ( *utfchar & ( ch ) 0xF0U ) == ( ch ) 0xE0U )
 		{
 			numBytes = 3;
 		}
-		else if( ( *utfchar & 0xF8 ) == 0xF0 )
+		else if( ( *utfchar & ( ch ) 0xF8U ) == ( ch ) 0xF0U )
 		{
 			numBytes = 4;
 		}
@@ -1009,10 +1064,10 @@ namespace uti
 		{
 			numBytes = 0;
 		}
-		bool result = ValidUTF8Byte( utfchar );
+		result &= ValidUTF8Byte( utfchar );
 		for( u32 i = 1; result && i < numBytes; ++i )
 		{
-			result = result && ValidUTF8Byte( utfchar + i ) && ( utfchar[ i ] & 0xC0 ) == 0x80;
+			result = result && ValidUTF8Byte( utfchar + i ) && ( utfchar[ i ] & ( ch ) 0xC0U ) == ( ch ) 0x80U;
 		}
 
 		if( !result )
