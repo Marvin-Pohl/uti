@@ -4,11 +4,11 @@
 #define uti_h__
 
 #ifdef DISABLE_CPP11
-	#ifdef nullptr
-		#define OLD_NULLPTR nullptr
-		#undef nullptr
-	#endif // nullptr
-	#define nullptr NULL
+#ifdef nullptr
+#define OLD_NULLPTR nullptr
+#undef nullptr
+#endif // nullptr
+#define nullptr NULL
 #endif // DISABLE_CPP11
 
 
@@ -54,10 +54,10 @@ namespace uti
 	\brief Basic Interface for any custom Allocator for the UTFString class.
 	To use a custom Allocator write a subclass of IAllocator and pass it as second parameter of the UTFString template arguments.
 
-	The Allocator is intended to work like a proxy allocator, which means it should be lightweight, 
+	The Allocator is intended to work like a proxy allocator, which means it should be lightweight,
 	because any instance of the UTFString contains a copy of the Allocator.
 	Therefore it is recommended to access the actual Allocator using a static or global definition.
-	
+
 	*/
 	class IAllocator
 	{
@@ -72,7 +72,7 @@ namespace uti
 	};
 
 	/**
-	\brief Default implementation for the UTFString allocator, 
+	\brief Default implementation for the UTFString allocator,
 	which utilizes new and delete directly to allocate and deallocate Memory.
 	*/
 	class DefaultAllocator : public IAllocator
@@ -104,7 +104,7 @@ namespace uti
 
 	/**
 	\brief Reference Counter class for copy on write functionality of the UTFString.
-	
+
 	*/
 	template< typename T, typename Allocator >
 	class ReferenceCounted
@@ -159,7 +159,7 @@ namespace uti
 	Each iteration step increases in the atomic size of the underlying String ( e.g. 1 Byte in UTF-8 and 2 bytes in UTF-16 )
 
 	\tparam StringType The underlying String class type, over which the iterator is going to iterate.
-	
+
 	*/
 	template< typename StringType >
 	class UTFByteIterator
@@ -288,7 +288,7 @@ namespace uti
 
 		/**
 		\brief Appends the given string \c rhs to this string at the End.
-		
+
 		The new Size of the resulting string will be the this->Size() + rhs.Size()
 
 		\return The new Size of the string.
@@ -335,20 +335,20 @@ namespace uti
 		*/
 		Iterator Begin( void ) const;
 		/**
-		\brief Returns an iterator to the end of the string. 
+		\brief Returns an iterator to the end of the string.
 		Useful for comparison with an iterator currently iterating
 		*/
 		Iterator End( void ) const;
 
 		/**
-		\brief Returns a reverse iterator to the end of the string, 
+		\brief Returns a reverse iterator to the end of the string,
 		which iterates towards the start of the string.
 
 		*/
 		ReverseIterator rBegin( void ) const;
-		
+
 		/**
-		\brief Returns a reverse iterator to the start of the string. 
+		\brief Returns a reverse iterator to the start of the string.
 		Useful for comparison with a reverse iterator currently iterating.
 		*/
 		ReverseIterator rEnd( void ) const;
@@ -553,7 +553,7 @@ namespace uti
 	template< typename T, typename Allocator >
 	void ReferenceCounted< T, Allocator >::IncRef( void )
 	{
-		if( ( *m_Count ) > 0 )
+		if( ( *m_Count ) > 0U )
 		{
 			++( *m_Count );
 		}
@@ -786,7 +786,7 @@ namespace uti
 	template< typename String >
 	UTFByteIterator< String >::~UTFByteIterator()
 	{
-		m_uiPos = 0;
+		m_uiPos = 0U;
 	}
 
 	template< typename String >
@@ -925,9 +925,9 @@ namespace uti
 	{
 		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
 
-		m_pData[ 0 ] = 0;
+		m_pData[ 0 ] = 0U;
 
-		m_uiSize = 1;
+		m_uiSize = 0U;
 	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
@@ -949,7 +949,8 @@ namespace uti
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
 	UTF8String<ch, Allocator>::~UTF8String()
 	{
-		m_uiSize = 0;
+		m_pData.SetNull();
+		m_uiSize = 0U;
 	}
 
 
@@ -971,31 +972,31 @@ namespace uti
 		else
 		{
 			//Extract code point by filtering out the continuation and byte count marks and shifting the code points value together.
-			
+
 			u32 result = 0U;
 			switch( length )
 			{
-			// Easiest case BXXXXXXX; we want the Xes, but B is always 0 so simply return the value.
+				// Easiest case BXXXXXXX; we want the Xes, but B is always 0 so simply return the value.
 			case 1U:
 				result = *utfchar;
-			// Second case is BBBXXXXX BBXXXXXX, so we filter the second byte by 0x3FU.
-			// Then filter the first by 0x1FU and shift it 6 bits to the left, to attach it to the second value
+				// Second case is BBBXXXXX BBXXXXXX, so we filter the second byte by 0x3FU.
+				// Then filter the first by 0x1FU and shift it 6 bits to the left, to attach it to the second value
 			case 2U:
 				result = utfchar[ 1U ] & ( ch ) 0x3FU; // Extract lower value, filtering continuation part
 				result |= ( ( u32 ) ( utfchar[ 0U ] & ( ch ) 0x1FU ) ) << 6U; // Add upper value, filtering 2 byte mark
 				break;
-			// Third case is BBBBXXXX BBXXXXXX BBXXXXXX, so we filter the third byte by 0x3FU.
-			// Then filter the second by 0x3FU and shift it 6 bits to the left, to attach it to the output value
-			// Then filter the first by 0x0FU and shift it 12 bits to the left, to attach it to the output value
+				// Third case is BBBBXXXX BBXXXXXX BBXXXXXX, so we filter the third byte by 0x3FU.
+				// Then filter the second by 0x3FU and shift it 6 bits to the left, to attach it to the output value
+				// Then filter the first by 0x0FU and shift it 12 bits to the left, to attach it to the output value
 			case 3U:
 				result = utfchar[ 2U ] & ( ch ) 0x3FU;
 				result |= ( ( u32 ) ( utfchar[ 1U ] & ( ch ) 0x3FU ) ) << 6U;
 				result |= ( ( u32 ) ( utfchar[ 0U ] & ( ch ) 0x0FU ) ) << 12U;
-				break;	  
-			// Fourth case is BBBBBXXX BBXXXXXX BBXXXXXX BBXXXXXX, so we filter the fourth byte by 0x3FU.
-			// Then filter the third by 0x3FU and shift it 6 bits to the left, to attach it to the output value
-			// Then filter the second by 0x3FU and shift it 6 bits to the left, to attach it to the output value
-			// Then filter the first by 0x007U and shift it 18 bits to the left, to attach it to the output value
+				break;
+				// Fourth case is BBBBBXXX BBXXXXXX BBXXXXXX BBXXXXXX, so we filter the fourth byte by 0x3FU.
+				// Then filter the third by 0x3FU and shift it 6 bits to the left, to attach it to the output value
+				// Then filter the second by 0x3FU and shift it 6 bits to the left, to attach it to the output value
+				// Then filter the first by 0x007U and shift it 18 bits to the left, to attach it to the output value
 			case 4U:
 				result = utfchar[ 3U ] & ( ch ) 0x3FU;
 				result |= ( ( u32 ) ( utfchar[ 2U ] & ( ch ) 0x3FU ) ) << 6U;
@@ -1017,12 +1018,12 @@ namespace uti
 		u32 newSize = m_uiSize + rhs.m_uiSize;
 		DataType newStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize + 1 ) );
 
-		u32 newPos = 0;
-		for( u32 i = 0; i < m_uiSize; ++i )
+		u32 newPos = 0U;
+		for( u32 i = 0U; i < m_uiSize; ++i )
 		{
 			newStringData[ newPos++ ] = m_pData[ i ];
 		}
-		for( u32 i = 0; i < rhs.m_uiSize; ++i )
+		for( u32 i = 0U; i < rhs.m_uiSize; ++i )
 		{
 			newStringData[ newPos++ ] = rhs.m_pData[ i ];
 		}
@@ -1215,7 +1216,7 @@ namespace uti
 		}
 		else
 		{
-			return *utfchar <= 0xF4 && ( *utfchar < 0xC0 || *utfchar > 0xC1 );
+			return *utfchar <= ( ch ) 0xF4U && ( *utfchar < ( ch ) 0xC0U || *utfchar >( ch ) 0xC1U );
 		}
 	}
 
@@ -1230,12 +1231,12 @@ namespace uti
 			{
 				++validSize;
 			}
-			else if( validSize > 0 )
+			else if( validSize > 0U )
 			{
 				--validSize;
 			}
 		}
-		m_pData = DataType( static_cast< ch* >( m_Alloc.AllocateBytes( (size + 1) * sizeof( ch ) ) ) );
+		m_pData = DataType( static_cast< ch* >( m_Alloc.AllocateBytes( ( size + 1U ) * sizeof( ch ) ) ) );
 
 		u32 bytesToNextChar = 0U;
 		u32 arrayPos = 0U;
@@ -1244,16 +1245,16 @@ namespace uti
 			if( bytesToNextChar-- == 0U )
 			{
 				bytesToNextChar = ValidUTF8Char( text + i );
-				if( bytesToNextChar == 0 )
+				if( bytesToNextChar == 0U )
 				{
 					if( ReplacementChar != nullptr && &ReplacementChar != 0U )
 					{
 						u32 replaceCharCount = ValidUTF8Char( ReplacementChar );
-						
+
 						if( replaceCharCount != 0U ) // Replace invalid Chars with ReplacementChar
 						{
 							u32 replaceCount = ValidUTF8Char( text + i );
-							while( i < size && replaceCount == 0 )
+							while( i < size && replaceCount == 0U )
 							{
 								for( u32 k = 0U; k < replaceCharCount && i < size; ++k )
 								{
@@ -1266,7 +1267,7 @@ namespace uti
 						else //Skip invalid Bytes, because Replacement Char is also Invalid
 						{
 							u32 replaceCount = ValidUTF8Char( text + i );
-							while( i < size && replaceCount == 0 )
+							while( i < size && replaceCount == 0U )
 							{
 								++i;
 								replaceCount = ValidUTF8Char( text + i );
@@ -1276,7 +1277,7 @@ namespace uti
 					else //Skip invalid Bytes, because Replacement Char is null
 					{
 						u32 replaceCount = ValidUTF8Char( text + i );
-						while( i < size && replaceCount == 0 )
+						while( i < size && replaceCount == 0U )
 						{
 							++i;
 							replaceCount = ValidUTF8Char( text + i );
@@ -1300,11 +1301,11 @@ namespace uti
 }
 
 #ifdef DISABLE_CPP11
-	#undef nullptr
-		#ifdef OLD_NULLPTR
-			#define nullptr OLD_NULLPTR
-			#undef OLD_NULLPTR
-	#endif // OLD_NULLPTR
+#undef nullptr
+#ifdef OLD_NULLPTR
+#define nullptr OLD_NULLPTR
+#undef OLD_NULLPTR
+#endif // OLD_NULLPTR
 
 #endif // DISABLE_CPP11
 
