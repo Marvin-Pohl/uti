@@ -4,9 +4,9 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-template __declspec( dllexport ) class uti::UTFString<>;
+template __declspec( dllexport ) class uti::UTF8String<>;
 
-typedef uti::UTFString<> String;
+typedef uti::UTF8String<> String;
 
 namespace utiTest
 {
