@@ -995,7 +995,7 @@ namespace uti
 				break;
 				// Fourth case is BBBBBXXX BBXXXXXX BBXXXXXX BBXXXXXX, so we filter the fourth byte by 0x3FU.
 				// Then filter the third by 0x3FU and shift it 6 bits to the left, to attach it to the output value
-				// Then filter the second by 0x3FU and shift it 6 bits to the left, to attach it to the output value
+				// Then filter the second by 0x3FU and shift it 12 bits to the left, to attach it to the output value
 				// Then filter the first by 0x007U and shift it 18 bits to the left, to attach it to the output value
 			case 4U:
 				result = utfchar[ 3U ] & 0x3FU;
