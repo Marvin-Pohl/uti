@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "..\..\uti.hpp"
+#include <fstream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -133,6 +134,72 @@ namespace utiTest
 			char surrogate [] = { 0xd8U, 0x00U };
 
 			Assert::AreEqual( String::ValidUTF8Char( surrogate ), 0U );
+		}
+
+		TEST_METHOD( CompleteCodePointTest )
+		{
+			std::ifstream file;
+			file.open( "../test.txt", std::ios::binary );
+
+			if( !file.is_open() )
+			{
+				Assert::Fail( L"Could not open File 'test.txt'" );
+			}
+			else
+			{
+				file.seekg( 0, std::ios::end );
+
+				size_t fileSize = (size_t)file.tellg().seekpos();
+
+				file.seekg( 0, std::ios::beg );
+
+				char* content = new char[ fileSize + 1 ];
+				content[ fileSize ] = '\0';
+
+				size_t pos = 0;
+
+				do 
+				{
+					file.read( content + pos, 1000 );
+					pos += (size_t)file.gcount();
+				 }while( !file.eof() && file.gcount() != 0 );
+
+				if( pos < 4416047U ) //Exact Byte size of test.txt
+				{
+					Assert::Fail( (
+						std::wstring( L"Failed to read " ) + 
+						std::to_wstring( fileSize ) + 
+						std::wstring( L" Bytes of data, could only read " ) + 
+						std::to_wstring( pos ) + std::wstring( L" Bytes!" ) 
+						).c_str() );
+					return;
+				}
+
+				file.close();
+
+				size_t charCount = 0;
+
+				for( size_t i = 0; i < fileSize; )
+				{
+					size_t length = String::ValidUTF8Char( content + i );
+					if( length == 0 )
+					{
+						Assert::Fail( (std::wstring( L"Invalid Char at position " ) + std::to_wstring( i )).c_str() );
+						break;
+					}
+					else
+					{
+						i += length;
+						charCount++;
+					}
+
+				}
+
+				String completeUTF8( content );
+				Assert::AreEqual( fileSize - 1, completeUTF8.Size() );
+
+				//TODO check CharCount as soon as its available;
+			}
 		}
 
 	};

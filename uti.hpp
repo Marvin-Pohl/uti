@@ -1216,7 +1216,7 @@ namespace uti
 		}
 		else
 		{
-			return *utfchar <= 0xF4U && ( *utfchar < 0xC0U || *utfchar > 0xC1U );
+			return ( unsigned char ) *utfchar <= 0xF4U && ( ( unsigned char ) *utfchar < 0xC0U || ( unsigned char ) *utfchar > 0xC1U );
 		}
 	}
 
@@ -1284,11 +1284,12 @@ namespace uti
 						}
 					}
 				}
-				else
-				{
-					m_pData[ arrayPos++ ] = static_cast< ch >( text[ i ] );
-					--bytesToNextChar;
-				}
+				
+			}
+			else
+			{
+				m_pData[ arrayPos++ ] = static_cast< ch >( text[ i ] );
+				--bytesToNextChar;
 			}
 
 		}
