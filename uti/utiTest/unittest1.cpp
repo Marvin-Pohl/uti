@@ -199,6 +199,8 @@ namespace utiTest
 				Assert::AreEqual( fileSize - 1, completeUTF8.Size() );
 
 				//TODO check CharCount as soon as its available;
+
+				delete content;
 			}
 		}
 
