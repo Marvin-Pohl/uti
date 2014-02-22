@@ -57,6 +57,9 @@ namespace utiTest
 
 				String string( blah );
 
+				Assert::AreEqual( 9U, string.CharCount() );
+				Assert::AreEqual( 9U, string.Size() );
+
 			}
 			catch( ... )
 			{
@@ -133,7 +136,7 @@ namespace utiTest
 		{
 			char surrogate [] = { 0xd8U, 0x00U };
 
-			Assert::AreEqual( String::ValidUTF8Char( surrogate ), 0U );
+			Assert::AreEqual( String::ValidChar( surrogate ), 0U );
 		}
 
 		TEST_METHOD( CompleteCodePointTest )
@@ -181,7 +184,7 @@ namespace utiTest
 
 				for( size_t i = 0; i < fileSize; )
 				{
-					size_t length = String::ValidUTF8Char( content + i );
+					size_t length = String::ValidChar( content + i );
 					if( length == 0 )
 					{
 						Assert::Fail( (std::wstring( L"Invalid Char at position " ) + std::to_wstring( i )).c_str() );
@@ -196,7 +199,7 @@ namespace utiTest
 				}
 
 				String completeUTF8( content );
-				Assert::AreEqual( fileSize - 1, completeUTF8.Size() );
+				Assert::AreEqual( fileSize, completeUTF8.Size() );
 
 				//TODO check CharCount as soon as its available;
 
