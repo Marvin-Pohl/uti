@@ -360,7 +360,7 @@ namespace uti
 		\brief Returns a pointer to the data of the String.
 
 
-		\return The data of the string.
+		\return The data pointer of the string.
 		*/
 		ch* Data() const;
 
@@ -374,7 +374,8 @@ namespace uti
 		const ch* c_str() const;
 
 		/**
-		\brief Returns the size of the string without the '0' at the end, so the actual allocated size is \c Size() \c + \c 1
+		\brief Returns the size of the string without the '0' at the end, 
+		so the actual allocated size is \c Size() \c + \c 1
 		*/
 		u32 Size( void ) const;
 
@@ -406,12 +407,30 @@ namespace uti
 		*/
 		Iterator End( void ) const;
 
+		/**
+		\brief Returns an iterator which iterates over every char (utf-8 code point) of the String from its start
+		
+		*/
 		CharIterator CharBegin( void ) const;
 
+		/**
+		\brief Returns an iterator which iterates over every char(utf-8 code point) of the String, but placed on the end
+		Useful for comparison with an iterator currently iterating
+		
+		*/
 		CharIterator CharEnd( void ) const;
 
+		/**
+		\brief \brief Returns a reverse iterator to the end of the string,
+		which iterates towards the start of the string.
+		
+		*/
 		CharReverseIterator rCharBegin( void ) const;
 
+		/**
+		\brief Returns a reverse iterator to the start of the string.
+		Useful for comparison with a reverse iterator currently iterating.
+		*/
 		CharReverseIterator rCharEnd( void ) const;
 
 		/**
@@ -427,7 +446,6 @@ namespace uti
 		*/
 		ReverseIterator rEnd( void ) const;
 
-		void CopyConstChar( const ch* text );
 
 		/**
 		\brief Checks if the given Byte is in range of a valid UTF-8 Byte.
@@ -439,19 +457,44 @@ namespace uti
 		*/
 		static inline bool ValidByte( const ch* utfchar );
 
+		/**
+		\brief Checks if the utf-8 char starting at ufchar is a valid char.
+
+		\return The size of the char starting at utfchar or zero if it is invalid
+		
+		*/
 		static inline u32 ValidChar( const ch* utfChar );
 
+		/**
+		\brief Calculates the size of the utf-8 char starting at utfchar without checking for validity.
+		
+		\return The size of the char starting at utfchar or zero if it is invalid 
+		(does not match any known start sequence for utf-8 chars)
+		*/
 		static inline u32 CharSize( const ch* utfchar );
 
+		/**
+		\brief Calculates the code point from the utfchar (the U+XXXX value)
+
+		This method is used to decode utf-8 encoded characters for encoding to other codes.
+		
+		*/
 		static inline u32 ExtractCodePoint( const ch* utfchar );
 
 		friend class UTFByteIterator< ThisType >;
 		friend class UTFCharIterator< ThisType >;
 
+		/**
+		\brief invalid characters found during creation of utf-8 strings are replaced by the contents of this variable.
+
+		Setting it to a nullptr will skip any invalid characters.
+		
+		*/
 		static ch* ReplacementChar;
 
 	protected:
 	private:
+		void CopyConstChar( const ch* text );
 
 		DataType m_pData;
 		Allocator m_Alloc;
@@ -849,7 +892,7 @@ namespace uti
 			throw UTFException( "Iterator not dereferenceable", 0 );
 		}
 #else
-		return *(m_String.m_pData + m_uiPos);
+		return *(m_String.m_pData.Ptr() + m_uiPos);
 #endif
 
 	}
@@ -916,7 +959,7 @@ namespace uti
 			u32 size = 0;
 			while( m_uiPos > 0 && size == 0 )
 			{
-				size = String::ValidChar( ( m_String.m_pData.Ptr() ) + m_uiPos );
+				size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
 				--m_uiPos;
 			}
 			return *this;
@@ -927,7 +970,12 @@ namespace uti
 		}
 #else
 
-		--m_uiPos;
+		u32 size = 0;
+		while( m_uiPos > 0 && size == 0 )
+		{
+			size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
+			--m_uiPos;
+		}
 		return *this;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -968,7 +1016,7 @@ namespace uti
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( m_uiPos < m_String.m_uiSize )
 		{
-			u32 size = String::ValidChar( m_String.m_pData.Ptr() + m_uiPos );
+			u32 size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
 			if( size != 0 )
 			{
 				m_uiPos += size;
@@ -977,7 +1025,7 @@ namespace uti
 			{
 				while( size == 0 && m_uiPos < m_String.m_uiSize )
 				{
-					size = String::ValidChar( m_String.m_pData.Ptr() + m_uiPos );
+					size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
 					++m_uiPos;
 				}
 			}
@@ -990,7 +1038,20 @@ namespace uti
 		}
 #else
 
-		++m_uiPos;
+		u32 size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
+		if( size != 0 )
+		{
+			m_uiPos += size;
+		}
+		else
+		{
+			do
+			{
+				size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
+				++m_uiPos;
+			} while( size == 0 && m_uiPos < m_String.m_uiSize );
+		}
+
 		return *this;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 	}
