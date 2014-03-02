@@ -496,6 +496,8 @@ namespace uti
 	private:
 		void CopyConstChar( const ch* text );
 
+		void CreateEmptyString();
+
 		DataType m_pData;
 		Allocator m_Alloc;
 		u32 m_uiSize;
@@ -1324,13 +1326,7 @@ namespace uti
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
 	UTF8String<ch, Allocator>::UTF8String( void )
 	{
-		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
-
-		m_pData[ 0 ] = 0U;
-
-		m_uiSize = 0U;
-
-		m_uiCharCount = 0U;
+		CreateEmptyString();
 	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
@@ -1346,8 +1342,14 @@ namespace uti
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
 	UTF8String<ch, Allocator>::UTF8String( const ch* text )
 	{
-		CopyConstChar( text );
-
+		if( text != nullptr )
+		{
+			CopyConstChar( text );
+		}
+		else
+		{
+			CreateEmptyString();
+		}
 	}
 
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
@@ -1358,6 +1360,14 @@ namespace uti
 		m_uiCharCount = 0U;
 	}
 
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	void uti::UTF8String<ch, Allocator>::CreateEmptyString()
+	{
+		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
+		m_pData[ 0 ] = 0U;
+		m_uiSize = 0U;
+		m_uiCharCount = 0U;
+	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	u32 uti::UTF8String<ch, Allocator>::Size( void ) const

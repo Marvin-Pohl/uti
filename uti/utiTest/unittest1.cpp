@@ -94,18 +94,72 @@ namespace utiTest
 
 		}
 
+		TEST_METHOD( CTorFailTest )
+		{
+			try
+			{
+				String string( ( const char* )nullptr );
+
+				String string2 = string;
+
+				String string3 = string + string2;
+
+				Assert::IsTrue( string.Size() == 0 );
+				Assert::IsTrue( string.CharCount() == 0 );
+				Assert::IsTrue( string2.Size() == 0 );
+				Assert::IsTrue( string2.CharCount() == 0 );
+				Assert::IsTrue( string3.Size() == 0 );
+				Assert::IsTrue( string3.CharCount() == 0 );
+			}
+			catch( ... )
+			{
+				Assert::Fail( L"Nullptr crashed the string constructor" );
+			}
+		}
+
 		TEST_METHOD( IteratorTest )
 		{
 			String bla( "Test" );
 			const char test [] = "Test";
 			unsigned int iterations = 0;
-			for( auto it = bla.Begin(); it != bla.End(); ++it, ++iterations )
+			auto it = bla.Begin();
+
+#ifdef DEBUG
+
+
+			try
+			{
+				it--;
+
+				Assert::Fail();
+			}
+			catch( uti::UTFException& )
+			{
+
+			}
+#endif // DEBUG
+
+			for( ; it != bla.End(); ++it, ++iterations )
 			{
 				Assert::AreEqual( *it, test[ iterations ] );
 
 			}
 
 			Assert::AreEqual( 4U, iterations );
+
+#ifdef DEBUG
+			try
+			{
+				it++;
+
+				Assert::Fail();
+			}
+			catch( uti::UTFException& )
+			{
+
+			}
+#endif // DEBUG
+
 		}
 
 		TEST_METHOD( ReverseIterator )
@@ -113,13 +167,43 @@ namespace utiTest
 			String bla( "Test" );
 			const char* test = "Test";
 			unsigned int iterations = 0;
-			for( auto it = bla.rBegin(); it != bla.rEnd(); ++it, ++iterations )
+			auto it = bla.rBegin();
+
+#ifdef DEBUG
+			try
+			{
+				it--;
+
+				Assert::Fail();
+			}
+			catch( uti::UTFException& )
+			{
+
+			}
+#endif // DEBUG
+
+
+			for( ; it != bla.rEnd(); ++it, ++iterations )
 			{
 				Assert::AreEqual( test[ 3U - iterations ], *it );
-
 			}
 
 			Assert::AreEqual( 4U, iterations );
+
+#ifdef DEBUG
+			try
+			{
+				it++;
+
+				Assert::Fail();
+			}
+			catch( uti::UTFException& )
+			{
+
+			}
+#endif // DEBUG
+			
+
 		}
 
 		TEST_METHOD( ConcatTest )
@@ -127,9 +211,8 @@ namespace utiTest
 			String first( "Some" );
 			String second( "Test" );
 			String expected( "SomeTest" );
-
-			//Assert::IsTrue( first == String( "first" ) );
-			Assert::IsTrue( ( first + second ) == expected, ( ToString( first + second ) + ToString( " does not match " ) + ToString( expected ) ).c_str() );
+			Assert::IsTrue( ( first + second ) == expected, 
+				( ToString( first + second ) + ToString( " does not match " ) + ToString( expected ) ).c_str() );
 		}
 
 		TEST_METHOD( ValidityTest )
