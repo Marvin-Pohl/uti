@@ -92,7 +92,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="unit2.cpp" />
-    <ClCompile Include="unittest1.cpp" />
+    <ClCompile Include="UTF16Test.cpp" />
+    <ClCompile Include="UTF8test1.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt">

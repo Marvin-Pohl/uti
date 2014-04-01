@@ -29,10 +29,13 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="unittest1.cpp">
+    <ClCompile Include="unit2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="unit2.cpp">
+    <ClCompile Include="UTF8test1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UTF16Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

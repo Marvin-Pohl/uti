@@ -1,5 +1,6 @@
 #pragma once
 #include <exception>
+#include <intrin.h>
 #ifndef uti_h__
 #define uti_h__
 
@@ -17,6 +18,23 @@ namespace uti
 
 	typedef unsigned int u32;
 
+	template< bool condition, typename TrueType, typename FalseType >
+	struct if_
+	{
+	};
+
+	template< typename TrueType, typename FalseType >
+	struct if_<true, TrueType, FalseType>
+	{
+		typedef typename TrueType type;
+	};
+
+	template< typename TrueType, typename FalseType >
+	struct if_<false, TrueType, FalseType>
+	{
+		typedef typename FalseType type;
+	};
+
 	template < typename ch, typename Allocator >
 	class UTF8String;
 
@@ -29,7 +47,7 @@ namespace uti
 			std::exception( what, code )
 		{
 
-		}
+			}
 
 	protected:
 	private:
@@ -374,14 +392,14 @@ namespace uti
 		const ch* c_str() const;
 
 		/**
-		\brief Returns the size of the string without the '0' at the end, 
+		\brief Returns the size of the string without the '0' at the end,
 		so the actual allocated size is \c Size() \c + \c 1
 		*/
 		u32 Size( void ) const;
 
 		/**
 		\brief Returns the char count of the string, as char means single character represented by a code point.
-		
+
 		*/
 		u32 CharCount( void ) const;
 
@@ -409,21 +427,21 @@ namespace uti
 
 		/**
 		\brief Returns an iterator which iterates over every char (utf-8 code point) of the String from its start
-		
+
 		*/
 		CharIterator CharBegin( void ) const;
 
 		/**
 		\brief Returns an iterator which iterates over every char(utf-8 code point) of the String, but placed on the end
 		Useful for comparison with an iterator currently iterating
-		
+
 		*/
 		CharIterator CharEnd( void ) const;
 
 		/**
 		\brief \brief Returns a reverse iterator to the end of the string,
 		which iterates towards the start of the string.
-		
+
 		*/
 		CharReverseIterator rCharBegin( void ) const;
 
@@ -461,14 +479,14 @@ namespace uti
 		\brief Checks if the utf-8 char starting at ufchar is a valid char.
 
 		\return The size of the char starting at utfchar or zero if it is invalid
-		
+
 		*/
 		static inline u32 ValidChar( const ch* utfChar );
 
 		/**
 		\brief Calculates the size of the utf-8 char starting at utfchar without checking for validity.
-		
-		\return The size of the char starting at utfchar or zero if it is invalid 
+
+		\return The size of the char starting at utfchar or zero if it is invalid
 		(does not match any known start sequence for utf-8 chars)
 		*/
 		static inline u32 CharSize( const ch* utfchar );
@@ -477,7 +495,7 @@ namespace uti
 		\brief Calculates the code point from the utfchar (the U+XXXX value)
 
 		This method is used to decode utf-8 encoded characters for encoding to other codes.
-		
+
 		*/
 		static inline u32 ExtractCodePoint( const ch* utfchar );
 
@@ -488,12 +506,224 @@ namespace uti
 		\brief invalid characters found during creation of utf-8 strings are replaced by the contents of this variable.
 
 		Setting it to a nullptr will skip any invalid characters.
-		
+
 		*/
 		static ch* ReplacementChar;
 
 	protected:
 	private:
+		void CopyConstChar( const ch* text );
+
+		void CreateEmptyString();
+
+		DataType m_pData;
+		Allocator m_Alloc;
+		u32 m_uiSize;
+		u32 m_uiCharCount;
+	};
+
+	enum class BinaryOrder
+	{
+		LittleEndian = 0x1,
+		BigEndian = 0x2
+	};
+
+	/**
+	\brief Class representing a valid UTF-8 string.
+
+	\tparam ch Is the type used for a single byte ( not a full UTF-8 char! ).
+	The default is char which is ok for the most compilers.
+	You might want to change this parameter if you prefer to store the UTF-8 String in a specific way.
+
+	\tparam Allocator Is the class used to allocate the memory for the string (and memory for the Reference Counting)
+
+	*/
+	template < typename ch = short, ::uti::BinaryOrder order = ::uti::BinaryOrder::LittleEndian, typename Allocator = ::uti::DefaultAllocator >
+	class UTF16String
+	{
+	public:
+
+		typedef const ch ConstType;
+		typedef ch Type;
+		typedef Allocator AllocatorType;
+		typedef typename UTF16String< ch, order, Allocator> ThisType;
+
+		typedef typename ::uti::UTFByteIterator< ThisType > Iterator;
+		typedef typename ::uti::ReverseIterator_tpl< typename Iterator > ReverseIterator;
+
+		typedef typename ::uti::UTFCharIterator< ThisType > CharIterator;
+		typedef typename ::uti::ReverseIterator_tpl< typename CharIterator > CharReverseIterator;
+		typedef typename ::uti::ReferenceCounted< ch, Allocator > DataType;
+
+		UTF16String( void );
+
+		UTF16String( const ch* text );
+
+		UTF16String( const UTF16String< ch, order, Allocator >& rhs );
+
+		~UTF16String();
+
+		UTF16String< ch, order, Allocator >& operator =( const UTF16String< ch, order, Allocator >& rhs );
+		UTF16String< ch, order, Allocator >& operator =( const ch* rhs );
+
+		UTF16String< ch, order, Allocator >& operator +=( const UTF16String< ch, order, Allocator >& rhs );
+		UTF16String< ch, order, Allocator > operator +( const UTF16String< ch, order, Allocator >& rhs ) const;
+
+		/**
+		\brief Appends the given string \c rhs to this string at the End.
+
+		The new Size of the resulting string will be the this->Size() + rhs.Size()
+
+		\return The new Size of the string.
+		*/
+		u32 Concat( const UTF16String< ch, order, Allocator >& rhs );
+
+
+		/**
+		\brief Returns a pointer to the data of the String.
+
+
+		\return The data pointer of the string.
+		*/
+		ch* Data() const;
+
+
+		/**
+		\brief Compatible implementation to the std::string
+		Returns a const type ptr to the data of the string
+
+		\return A const pointer to the data
+		*/
+		const ch* c_str() const;
+
+		/**
+		\brief Returns the size of the string without the '0' at the end,
+		so the actual allocated size is \c Size() \c + \c 1
+		*/
+		u32 Size( void ) const;
+
+		/**
+		\brief Returns the char count of the string, as char means single character represented by a code point.
+
+		*/
+		u32 CharCount( void ) const;
+
+
+		/**
+		\brief Returns if the UTF-String is empty or not
+
+		\return \c true if the string is empty or \c false if not
+		*/
+		bool Empty( void ) const;
+
+		bool operator ==( const UTF16String& rhs ) const;
+		bool operator !=( const UTF16String& rhs ) const;
+
+		/**
+		\brief Returns an iterator to the start of the string,
+		which iterates until the end of the string.
+		*/
+		Iterator Begin( void ) const;
+		/**
+		\brief Returns an iterator to the end of the string.
+		Useful for comparison with an iterator currently iterating
+		*/
+		Iterator End( void ) const;
+
+		/**
+		\brief Returns an iterator which iterates over every char (utf-8 code point) of the String from its start
+
+		*/
+		CharIterator CharBegin( void ) const;
+
+		/**
+		\brief Returns an iterator which iterates over every char(utf-8 code point) of the String, but placed on the end
+		Useful for comparison with an iterator currently iterating
+
+		*/
+		CharIterator CharEnd( void ) const;
+
+		/**
+		\brief \brief Returns a reverse iterator to the end of the string,
+		which iterates towards the start of the string.
+
+		*/
+		CharReverseIterator rCharBegin( void ) const;
+
+		/**
+		\brief Returns a reverse iterator to the start of the string.
+		Useful for comparison with a reverse iterator currently iterating.
+		*/
+		CharReverseIterator rCharEnd( void ) const;
+
+		/**
+		\brief Returns a reverse iterator to the end of the string,
+		which iterates towards the start of the string.
+
+		*/
+		ReverseIterator rBegin( void ) const;
+
+		/**
+		\brief Returns a reverse iterator to the start of the string.
+		Useful for comparison with a reverse iterator currently iterating.
+		*/
+		ReverseIterator rEnd( void ) const;
+
+		/**
+		\brief Checks if the utf-8 char starting at ufchar is a valid char.
+
+		\return The size of the char starting at utfchar or zero if it is invalid
+
+		*/
+		static inline u32 ValidChar( const ch* utfChar );
+
+		/**
+		\brief Calculates the size of the utf-8 char starting at utfchar without checking for validity.
+
+		\return The size of the char starting at utfchar or zero if it is invalid
+		(does not match any known start sequence for utf-8 chars)
+		*/
+		static inline u32 CharSize( const ch* utfchar );
+
+		/**
+		\brief Calculates the code point from the utfchar (the U+XXXX value)
+
+		This method is used to decode utf-8 encoded characters for encoding to other codes.
+
+		*/
+		static inline u32 ExtractCodePoint( const ch* utfchar );
+
+		friend class UTFByteIterator< ThisType >;
+		friend class UTFCharIterator< ThisType >;
+
+		/**
+		\brief invalid characters found during creation of utf-8 strings are replaced by the contents of this variable.
+
+		Setting it to a nullptr will skip any invalid characters.
+
+		*/
+		static ch* ReplacementChar;
+
+	protected:
+	private:
+
+		struct is_le
+		{
+		};
+
+		struct is_be
+		{
+		};
+
+		static inline u32 _CharSize_impl( const ch* utfchar, is_le = is_le() );
+		static inline u32 _CharSize_impl( const ch* utfchar, is_be = is_be() );
+
+		static inline u32 _ValidChar_impl( const ch* utfchar, is_le = is_le() );
+		static inline u32 _ValidChar_impl( const ch* utfchar, is_be = is_be() );
+
+		static inline u32 _ExtractCodePoint_impl( const ch* utfchar, is_le = is_le() );
+		static inline u32 _ExtractCodePoint_impl( const ch* utfchar, is_be = is_be() );
+
 		void CopyConstChar( const ch* text );
 
 		void CreateEmptyString();
@@ -629,7 +859,6 @@ namespace uti
 	{
 		if( this != &refCount )
 		{
-			DecRef();
 			m_CountedPointer = refCount.m_CountedPointer;
 			m_Count = refCount.m_Count;
 
@@ -675,6 +904,7 @@ namespace uti
 	template< typename T, typename Allocator >
 	void ReferenceCounted< T, Allocator >::IncRef( void )
 	{
+		printf( "Inc" );
 		if( ( *m_Count ) > 0U )
 		{
 			++( *m_Count );
@@ -1031,7 +1261,7 @@ namespace uti
 					++m_uiPos;
 				}
 			}
-			
+
 			return *this;
 		}
 		else
@@ -1320,7 +1550,7 @@ namespace uti
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// UTF String Implementation
+	// UTF-8 String Implementation
 	//////////////////////////////////////////////////////////////////////////
 
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
@@ -1438,15 +1668,8 @@ namespace uti
 		u32 newSize = m_uiSize + rhs.m_uiSize;
 		DataType newStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize + 1 ) );
 
-		u32 newPos = 0U;
-		for( u32 i = 0U; i < m_uiSize; ++i )
-		{
-			newStringData[ newPos++ ] = m_pData[ i ];
-		}
-		for( u32 i = 0U; i < rhs.m_uiSize; ++i )
-		{
-			newStringData[ newPos++ ] = rhs.m_pData[ i ];
-		}
+		std::memcpy( newStringData.Ptr(), m_pData.Ptr(), m_uiSize );
+		std::memcpy( newStringData.Ptr() + m_uiSize, rhs.m_pData.Ptr(), rhs.m_uiSize );
 		newStringData[ newSize ] = 0U;
 		m_pData = newStringData;
 		m_uiSize = newSize;
@@ -1500,7 +1723,7 @@ namespace uti
 	u32 uti::UTF8String<ch, Allocator>::CharSize( const ch* utfchar )
 	{
 		u32 numBytes;
-		
+
 		if( ( *utfchar & 0x80U ) == 0 )
 		{
 			return ValidByte( utfchar ) ? 1 : 0;
@@ -1752,7 +1975,7 @@ namespace uti
 						--bytesToNextChar;
 					}
 				}
-				
+
 			}
 			else
 			{
@@ -1766,7 +1989,495 @@ namespace uti
 		}
 		m_uiSize = arrayPos;
 		m_pData[ m_uiSize ] = 0U;
-		
+
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// UTF-16 String Implementation
+	//////////////////////////////////////////////////////////////////////////
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator >::UTF16String( void )
+	{
+		CreateEmptyString();
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator >::UTF16String( const UTF16String< ch, order, Allocator >& rhs ) :
+		m_pData( rhs.m_pData ),
+		m_uiSize( rhs.m_uiSize ),
+		m_Alloc( rhs.m_Alloc ),
+		m_uiCharCount( rhs.m_uiCharCount )
+	{
+
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator >::UTF16String( const ch* text )
+	{
+		if( text != nullptr )
+		{
+			CopyConstChar( text );
+		}
+		else
+		{
+			CreateEmptyString();
+		}
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator >::~UTF16String()
+	{
+		m_pData.SetNull();
+		m_uiSize = 0U;
+		m_uiCharCount = 0U;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	void uti::UTF16String< ch, order, Allocator >::CreateEmptyString()
+	{
+		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
+		m_pData[ 0 ] = 0U;
+		m_uiSize = 0U;
+		m_uiCharCount = 0U;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	u32 uti::UTF16String< ch, order, Allocator >::Size( void ) const
+	{
+		return m_uiSize;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	u32 uti::UTF16String< ch, order, Allocator >::CharCount( void ) const
+	{
+		return m_uiCharCount;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	u32 uti::UTF16String< ch, order, Allocator >::ExtractCodePoint( const ch* utfchar )
+	{
+		return _ExtractCodePoint_impl( utfchar, if_<order == BinaryOrder::LittleEndian, is_le, is_be>::type() );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTF16String<ch, order, Allocator>::_ExtractCodePoint_impl( const ch* utfchar, is_be /*= is_be() */ )
+	{
+		//Big Endian version
+		u32 length = ValidChar( utfchar );
+		if( length == 0U )
+		{
+			return length;
+		}
+		else
+		{
+			//Extract code point by filtering out the continuation and byte count marks and shifting the code points value together.
+
+			u32 result = 0U;
+			ch byte1;
+			ch byte2;
+			switch( length )
+			{
+				// Easiest case, Value is equal to its code point so simply return the value.
+			case 1U:
+				byte1 = _byteswap_ushort( *utfchar );
+				result = byte1;
+				// Second case using lead and trail surrogates	
+			case 2U:
+				byte1 = _byteswap_ushort( *utfchar );
+				byte2 = _byteswap_ushort( *( utfchar + 1 ) );
+				byte1 -= 0xD800U;
+				byte2 -= 0xDC00U;
+				byte1 = byte1 << 10;
+				result = byte1 | byte2;
+				result += 0x10000U;
+				break;
+			default:
+				break;
+			}
+			return result;
+		}
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTF16String<ch, order, Allocator>::_ExtractCodePoint_impl( const ch* utfchar, is_le /*= is_le() */ )
+	{
+		u32 length = ValidChar( utfchar );
+		if( length == 0U )
+		{
+			return length;
+		}
+		else
+		{
+			//Extract code point by filtering out the continuation and byte count marks and shifting the code points value together.
+
+			u32 result = 0U;
+			ch byte1;
+			ch byte2;
+			switch( length )
+			{
+				// Easiest case, Value is equal to its code point so simply return the value.
+			case 1U:
+				result = *utfchar;
+				// Second case using lead and trail surrogates	
+			case 2U:
+				byte1 = *utfchar;
+				byte2 = *( utfchar + 1 );
+				byte1 -= 0xD800U;
+				byte2 -= 0xDC00U;
+				byte1 = byte1 << 10;
+				result = byte1 | byte2;
+				result += 0x10000U;
+				break;
+			default:
+				break;
+			}
+			return result;
+		}
+	}
+
+
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	u32 uti::UTF16String< ch, order, Allocator >::Concat( const UTF16String< ch, order, Allocator >& rhs )
+	{
+		u32 newSize = m_uiSize + rhs.m_uiSize;
+		DataType newStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize * sizeof( ch ) + sizeof( ch ) ));
+
+		std::memcpy( newStringData.Ptr(), m_pData.Ptr(), m_uiSize * sizeof( ch ));
+		std::memcpy( newStringData.Ptr() + m_uiSize, rhs.m_pData.Ptr(), rhs.m_uiSize * sizeof( ch ));
+		newStringData[ newSize ] = 0U;
+		m_pData = newStringData;
+		m_uiSize = newSize;
+		m_uiCharCount += rhs.m_uiCharCount;
+		return newSize;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator > uti::UTF16String< ch, order, Allocator >::operator+( const UTF16String< ch, order, Allocator >& rhs ) const
+	{
+		UTF16String< ch, order, Allocator > newString( *this );
+		newString.Concat( rhs );
+		return newString;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator >& uti::UTF16String< ch, order, Allocator >::operator+=( const UTF16String< ch, order, Allocator >& rhs )
+	{
+		Concat( rhs );
+		return *this;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	u32 UTF16String<ch, order, Allocator >::ValidChar( const ch* utfchar )
+	{
+		return _ValidChar_impl( utfchar, if_<order == BinaryOrder::LittleEndian, is_le, is_be>::type() );
+	}
+
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTF16String<ch, order, Allocator>::_ValidChar_impl( const ch* utfchar, is_be /*= is_be() */ )
+	{
+		bool result = true;
+		u32 numBytes = CharSize( utfchar );
+		ch byte1 = _byteswap_ushort( *utfchar );
+		ch byte2 = _byteswap_ushort( *( utfchar + 1 ) );
+		if( numBytes == 2U )
+		{
+			result = result && ( byte1 >= 0xD800U || byte1 < 0xDC00 ) && ( byte2 >= 0xDC00U || byte2 < 0xE000U );
+		}
+
+		if( !result )
+		{
+			return 0U;
+		}
+		else
+		{
+			return numBytes;
+		}
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTF16String<ch, order, Allocator>::_ValidChar_impl( const ch* utfchar, is_le /*= is_le() */ )
+	{
+		bool result = true;
+		u32 numBytes = CharSize( utfchar );
+		ch byte1 = ( *utfchar );
+		ch byte2 = ( *( utfchar + 1 ) );
+		if( numBytes == 2U )
+		{
+			result = result && ( byte1 >= 0xD800U && byte1 < 0xDC00 ) && ( byte2 >= 0xDC00U && byte2 < 0xE000U );
+		}
+
+		if( !result )
+		{
+			return 0U;
+		}
+		else
+		{
+			return numBytes;
+		}
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	u32 uti::UTF16String< ch, order, Allocator >::CharSize( const ch* utfchar )
+	{
+		return _CharSize_impl( utfchar, if_<order == BinaryOrder::LittleEndian, is_le, is_be>::type() );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTF16String<ch, order, Allocator>::_CharSize_impl( const ch* utfchar, is_be /*= is_be() */ )
+	{
+		ch myByte = *utfchar;
+		myByte = _byteswap_ushort( myByte );
+
+		if( myByte < 0xD800U || myByte >= 0xE000U )
+		{
+			return 1;
+		}
+		else
+		{
+			return 2;
+		}
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTF16String<ch, order, Allocator>::_CharSize_impl( const ch* utfchar, is_le /*= is_le() */ )
+	{
+		if( *utfchar < 0xD800U || *utfchar >= 0xE000U )
+		{
+			return 1;
+		}
+		else
+		{
+			return 2;
+		}
+	}
+
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	ch* UTF16String< ch, order, Allocator >::ReplacementChar = nullptr;
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator >& UTF16String< ch, order, Allocator >::operator=( const ch* rhs )
+	{
+		CopyConstChar( rhs );
+		return *this;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	UTF16String< ch, order, Allocator >& UTF16String< ch, order, Allocator >::operator=( const UTF16String< ch, order, Allocator >& rhs )
+	{
+		m_pData = rhs.m_pData;
+		m_uiSize = rhs.m_uiSize;
+		m_Alloc = rhs.m_Alloc;
+		m_uiCharCount = rhs.m_uiCharCount;
+		return *this;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::ReverseIterator UTF16String< ch, order, Allocator >::rEnd( void ) const
+	{
+		return ReverseIterator( Begin() );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::ReverseIterator UTF16String< ch, order, Allocator >::rBegin( void ) const
+	{
+		return ReverseIterator( End() );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::Iterator UTF16String< ch, order, Allocator >::End( void ) const
+	{
+		return UTF16String< ch, order, Allocator >::Iterator( ( UTF16String& ) *this, m_uiSize );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::Iterator UTF16String< ch, order, Allocator >::Begin( void ) const
+	{
+		return UTF16String< ch, order, Allocator >::Iterator( ( UTF16String& ) *this, 0U );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::CharReverseIterator uti::UTF16String< ch, order, Allocator >::rCharEnd( void ) const
+	{
+		return CharReverseIterator( CharBegin() );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::CharReverseIterator uti::UTF16String< ch, order, Allocator >::rCharBegin( void ) const
+	{
+		return CharReverseIterator( CharEnd() );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::CharIterator uti::UTF16String< ch, order, Allocator >::CharEnd( void ) const
+	{
+		return UTF16String< ch, order, Allocator >::CharIterator( ( UTF16String& ) *this, m_uiSize );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	typename UTF16String< ch, order, Allocator >::CharIterator uti::UTF16String< ch, order, Allocator >::CharBegin( void ) const
+	{
+		return UTF16String< ch, order, Allocator >::CharIterator( ( UTF16String& ) *this, 0 );
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	bool UTF16String< ch, order, Allocator >::operator!=( const UTF16String& rhs ) const
+	{
+
+		if( m_uiSize != rhs.m_uiSize )
+		{
+			return true;
+		}
+
+		Iterator lStart = Begin();
+		Iterator rStart = rhs.Begin();
+		Iterator lEnd = End();
+		Iterator rEnd = rhs.End();
+
+		while( lStart != lEnd && rStart != rEnd )
+		{
+			if( *( lStart++ ) != *( rStart++ ) )
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	bool UTF16String< ch, order, Allocator >::operator==( const UTF16String& rhs ) const
+	{
+		if( m_uiSize != rhs.m_uiSize )
+		{
+			return false;
+		}
+
+		Iterator lStart = Begin();
+		Iterator rStart = rhs.Begin();
+		Iterator lEnd = End();
+		Iterator rEnd = rhs.End();
+
+		while( lStart != lEnd && rStart != rEnd )
+		{
+			if( *( lStart++ ) != *( rStart++ ) )
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	bool UTF16String< ch, order, Allocator >::Empty( void ) const
+	{
+		return m_pData.Null() || m_pData[ 0 ] == 0U;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	const ch* UTF16String< ch, order, Allocator >::c_str() const
+	{
+		if( m_pData.Valid() )
+		{
+			return m_pData.Ptr();
+		}
+		return nullptr;
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	ch* UTF16String< ch, order, Allocator >::Data() const
+	{
+		return m_pData.Ptr();
+	}
+
+	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
+	void UTF16String< ch, order, Allocator >::CopyConstChar( const ch* text )
+	{
+		u32 size = 0U;
+		u32 validSize = 0U;
+		while( text[ size ] != 0U )
+		{
+			++validSize;
+			++size;
+		}
+		m_pData = DataType( static_cast< ch* >( m_Alloc.AllocateBytes( ( size + 1U ) * sizeof( ch ) ) ) );
+
+		u32 bytesToNextChar = ValidChar( text );
+		u32 arrayPos = 0U;
+		m_uiCharCount = bytesToNextChar > 0U ? 1U : 0U;
+		for( u32 i = 0U; i < size; ++i )
+		{
+			if( bytesToNextChar == 0U )
+			{
+				bytesToNextChar = ValidChar( text + i );
+				if( bytesToNextChar == 0U )
+				{
+					if( ReplacementChar != nullptr && &ReplacementChar != 0U )
+					{
+						u32 replaceCharCount = ValidChar( ReplacementChar );
+
+						if( replaceCharCount != 0U ) // Replace invalid Chars with ReplacementChar
+						{
+							u32 replaceCount = ValidChar( text + i );
+							while( i < size && replaceCount == 0U )
+							{
+								for( u32 k = 0U; k < replaceCharCount && i < size; ++k )
+								{
+									m_pData[ arrayPos++ ] = ReplacementChar[ k ];
+								}
+								++i;
+								++m_uiCharCount;
+								replaceCount = ValidChar( text + i );
+							}
+						}
+						else //Skip invalid Bytes, because Replacement Char is also Invalid
+						{
+							u32 replaceCount = ValidChar( text + i );
+							while( i < size && replaceCount == 0U )
+							{
+								++i;
+								replaceCount = ValidChar( text + i );
+							}
+						}
+					}
+					else //Skip invalid Bytes, because Replacement Char is null
+					{
+						u32 replaceCount = ValidChar( text + i );
+						while( i < size && replaceCount == 0U )
+						{
+							++i;
+							replaceCount = ValidChar( text + i );
+						}
+					}
+				}
+				else
+				{
+					++m_uiCharCount;
+					m_pData[ arrayPos++ ] = static_cast< ch >( text[ i ] );
+					if( bytesToNextChar > 0U )
+					{
+						--bytesToNextChar;
+					}
+				}
+
+			}
+			else
+			{
+				m_pData[ arrayPos++ ] = static_cast< ch >( text[ i ] );
+				if( bytesToNextChar > 0U )
+				{
+					--bytesToNextChar;
+				}
+			}
+
+		}
+		m_uiSize = arrayPos;
+		m_pData[ m_uiSize ] = 0U;
+
 	}
 
 
