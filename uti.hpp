@@ -119,27 +119,19 @@ namespace uti
 		inline static void DecRef( u32& count )
 		{
 			printf( "Dec\n" );
-			if( count > 1U )
-			{
-				--count;
-			}
+			--count;
 		}
 
 		inline static void IncRef( u32& count )
 		{
 			printf( "Inc\n" );
-			if( count > 0U )
-			{
-				++count;
-			}
+			++count;
 		}
 
 		inline static void Destroy(IAllocator* pAllocator, void* pCounted, u32* pCount)
 		{
 			pAllocator->FreeBytes( pCounted );
-			pCounted = nullptr;
 			pAllocator->FreeBytes( pCount );
-			pCount = nullptr;
 		}
 	};
 
@@ -152,12 +144,13 @@ namespace uti
 	{
 	public:
 		ReferenceCounted( void );
-		ReferenceCounted( T* pointer );
+		explicit ReferenceCounted( T* pointer );
 		ReferenceCounted( const ReferenceCounted< T, Allocator, RefCountPolicy > & refCount );
 		ReferenceCounted( ReferenceCounted< T, Allocator, RefCountPolicy >&& refCount );
 		~ReferenceCounted();
 
 
+		ReferenceCounted< T, Allocator, RefCountPolicy >& operator =( T* pointer );
 		ReferenceCounted< T, Allocator, RefCountPolicy >& operator =( const ReferenceCounted< T, Allocator, RefCountPolicy >& refCount );
 		ReferenceCounted< T, Allocator, RefCountPolicy >& operator =( ReferenceCounted< T, Allocator, RefCountPolicy >&& refCount );
 
@@ -166,7 +159,7 @@ namespace uti
 
 		T* operator ->( );
 
-		T* operator *( );
+		T& operator *( );
 
 		T* Ptr( void ) const;
 
@@ -768,7 +761,7 @@ namespace uti
 
 	void DefaultAllocator::FreeBytes( void* ptr )
 	{
-		delete ptr;
+		delete[] ptr;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -840,10 +833,9 @@ namespace uti
 
 	template< typename T, typename Allocator, typename RefCountPolicy >
 	ReferenceCounted< T, Allocator, RefCountPolicy >::ReferenceCounted( void ) :
-		m_CountedPointer( nullptr )
+		m_CountedPointer( nullptr ),
+		m_Count(nullptr)
 	{
-		m_Count = static_cast< u32* >( m_Alloc.AllocateBytes( sizeof( u32 ) ) );
-		*m_Count = 1U;
 	}
 
 	template< typename T, typename Allocator, typename RefCountPolicy >
@@ -858,13 +850,12 @@ namespace uti
 	template< typename T, typename Allocator, typename RefCountPolicy >
 	ReferenceCounted< T, Allocator, typename RefCountPolicy >::~ReferenceCounted()
 	{
-		DecRef();
+		SetNull();
 	}
 
 	template< typename T, typename Allocator, typename RefCountPolicy >
 	ReferenceCounted< T, Allocator, RefCountPolicy >::ReferenceCounted( const ReferenceCounted< T, Allocator, RefCountPolicy >& refCount )
 	{
-
 		m_Count = refCount.m_Count;
 		m_CountedPointer = refCount.m_CountedPointer;
 
@@ -873,22 +864,46 @@ namespace uti
 
 	template< typename T, typename Allocator, typename RefCountPolicy >
 	ReferenceCounted< T, Allocator, RefCountPolicy >::ReferenceCounted( T* pointer ) :
-		m_CountedPointer( pointer )
+		m_CountedPointer( pointer ),
+		m_Count(nullptr)
 	{
-		m_Count = static_cast< u32* >( m_Alloc.AllocateBytes( sizeof( u32 ) ) );
-		*m_Count = 1U;
+		if (pointer != nullptr)
+		{
+			m_Count = static_cast< u32* >( m_Alloc.AllocateBytes( sizeof( u32 ) ) );
+			*m_Count = 0U;
+			IncRef();
+		}
 	}
 
 	template< typename T, typename Allocator, typename RefCountPolicy >
-	T* ReferenceCounted< T, Allocator, RefCountPolicy >::operator*( )
+	T& ReferenceCounted< T, Allocator, RefCountPolicy >::operator*( )
 	{
-		return m_CountedPointer;
+		return *m_CountedPointer;
 	}
 
 	template< typename T, typename Allocator, typename RefCountPolicy >
 	T* ReferenceCounted< T, Allocator, RefCountPolicy >::operator->( )
 	{
 		return m_CountedPointer;
+	}
+
+	template< typename T, typename Allocator, typename RefCountPolicy >
+	ReferenceCounted< T, Allocator, RefCountPolicy >& ReferenceCounted< T, Allocator, RefCountPolicy >::operator=( T* pointer )
+	{
+		if( m_CountedPointer != pointer )
+		{
+			DecRef();
+			m_CountedPointer = pointer;
+			if (pointer != nullptr)
+			{
+				m_Count = static_cast< u32* >( m_Alloc.AllocateBytes( sizeof( u32 ) ) );
+				*m_Count = 0U;
+				IncRef();
+			}
+		}
+
+		return *this;
+
 	}
 
 	template< typename T, typename Allocator, typename RefCountPolicy >
@@ -930,7 +945,7 @@ namespace uti
 			RefCountPolicy::DecRef(*m_Count);
 			if (*m_Count == 0)
 			{
-				RefCountPolicy::Destroy(&m_Alloc, reinterpret_cast<void*>(m_CountedPointer), m_Count);
+				RefCountPolicy::Destroy(&m_Alloc, m_CountedPointer, m_Count);
 				m_CountedPointer = nullptr;
 				m_Count = nullptr;
 			}
