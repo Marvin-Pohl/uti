@@ -46,8 +46,7 @@ namespace uti
 		inline UTFException( char const * const & what, int code ) :
 			std::exception( what, code )
 		{
-
-			}
+		}
 
 	protected:
 	private:
@@ -2082,7 +2081,7 @@ namespace uti
 			case 1U:
 				byte1 = _byteswap_ushort( *utfchar );
 				result = byte1;
-				// Second case using lead and trail surrogates	
+				// Second case using lead and trail surrogates
 			case 2U:
 				byte1 = _byteswap_ushort( *utfchar );
 				byte2 = _byteswap_ushort( *( utfchar + 1 ) );
@@ -2119,7 +2118,7 @@ namespace uti
 				// Easiest case, Value is equal to its code point so simply return the value.
 			case 1U:
 				result = *utfchar;
-				// Second case using lead and trail surrogates	
+				// Second case using lead and trail surrogates
 			case 2U:
 				byte1 = *utfchar;
 				byte2 = *( utfchar + 1 );
