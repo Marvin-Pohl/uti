@@ -105,6 +105,44 @@ namespace uti
 	private:
 	};
 
+	struct NoRefCountPolicy
+	{
+
+	};
+
+	struct ThreadSafeRefCountPolicy
+	{
+	};
+
+	struct DefaultRefCountPolicy
+	{
+		inline static void DecRef( u32& count )
+		{
+			printf( "Dec\n" );
+			if( count > 1U )
+			{
+				--count;
+			}
+		}
+
+		inline static void IncRef( u32& count )
+		{
+			printf( "Inc\n" );
+			if( count > 0U )
+			{
+				++count;
+			}
+		}
+
+		inline static void Destroy(IAllocator* pAllocator, u32*& pCounted, u32*& pCount)
+		{
+			pAllocator->FreeBytes( pCounted );
+			pCounted = nullptr;
+			pAllocator->FreeBytes( pCount );
+			pCount = nullptr;
+		}
+	};
+
 	/**
 	\brief Reference Counter class for copy on write functionality of the UTFString.
 
