@@ -106,20 +106,6 @@ namespace uti
 	private:
 	};
 
-	//////////////////////////////////////////////////////////////////////////
-	// Default Allocator implementation
-	//////////////////////////////////////////////////////////////////////////
-
-	void* DefaultAllocator::AllocateBytes( u32 size )
-	{
-		return new char[ size ];
-	}
-
-	void DefaultAllocator::FreeBytes( void* ptr )
-	{
-		delete ptr;
-	}
-
 	/**
 	\brief Reference Counter class for copy on write functionality of the UTFString.
 
@@ -733,6 +719,20 @@ namespace uti
 		u32 m_uiSize;
 		u32 m_uiCharCount;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Default Allocator implementation
+	//////////////////////////////////////////////////////////////////////////
+
+	void* DefaultAllocator::AllocateBytes( u32 size )
+	{
+		return new char[ size ];
+	}
+
+	void DefaultAllocator::FreeBytes( void* ptr )
+	{
+		delete ptr;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Reference Counted Implementation
