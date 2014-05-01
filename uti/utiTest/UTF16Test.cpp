@@ -62,7 +62,7 @@ namespace utiTest
 				String string( blah );
 
 				Assert::AreEqual( 9U, string.CharCount() );
-				Assert::AreEqual( 9U, string.Size() );
+				Assert::AreEqual( 18U, string.Size() );
 
 			}
 			catch( ... )
