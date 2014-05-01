@@ -46,8 +46,7 @@ namespace uti
 		inline UTFException( char const * const & what, int code ) :
 			std::exception( what, code )
 		{
-
-			}
+		}
 
 	protected:
 	private:
@@ -105,20 +104,6 @@ namespace uti
 
 	private:
 	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// Default Allocator implementation
-	//////////////////////////////////////////////////////////////////////////
-
-	void* DefaultAllocator::AllocateBytes( u32 size )
-	{
-		return new char[ size ];
-	}
-
-	void DefaultAllocator::FreeBytes( void* ptr )
-	{
-		delete ptr;
-	}
 
 	/**
 	\brief Reference Counter class for copy on write functionality of the UTFString.
@@ -733,6 +718,20 @@ namespace uti
 		u32 m_uiSize;
 		u32 m_uiCharCount;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Default Allocator implementation
+	//////////////////////////////////////////////////////////////////////////
+
+	void* DefaultAllocator::AllocateBytes( u32 size )
+	{
+		return new char[ size ];
+	}
+
+	void DefaultAllocator::FreeBytes( void* ptr )
+	{
+		delete ptr;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Reference Counted Implementation
@@ -1593,7 +1592,7 @@ namespace uti
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	void uti::UTF8String<ch, Allocator>::CreateEmptyString()
 	{
-		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
+		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( sizeof( ch ) ) );
 		m_pData[ 0 ] = 0U;
 		m_uiSize = 0U;
 		m_uiCharCount = 0U;
@@ -1666,12 +1665,12 @@ namespace uti
 	u32 uti::UTF8String<ch, Allocator>::Concat( const UTF8String<ch, Allocator>& rhs )
 	{
 		u32 newSize = m_uiSize + rhs.m_uiSize;
-		DataType newStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize + 1 ) );
+		ch* newRawStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize + sizeof( ch ) ) );
 
-		std::memcpy( newStringData.Ptr(), m_pData.Ptr(), m_uiSize );
-		std::memcpy( newStringData.Ptr() + m_uiSize, rhs.m_pData.Ptr(), rhs.m_uiSize );
-		newStringData[ newSize ] = 0U;
-		m_pData = newStringData;
+		std::memcpy( newRawStringData, m_pData.Ptr(), m_uiSize );
+		std::memcpy( newRawStringData + m_uiSize, rhs.m_pData.Ptr(), rhs.m_uiSize );
+		newRawStringData[ newSize ] = 0U;
+		m_pData = newRawStringData;
 		m_uiSize = newSize;
 		m_uiCharCount += rhs.m_uiCharCount;
 		return newSize;
@@ -1916,7 +1915,7 @@ namespace uti
 				--validSize;
 			}
 		}
-		m_pData = DataType( static_cast< ch* >( m_Alloc.AllocateBytes( ( size + 1U ) * sizeof( ch ) ) ) );
+		m_pData = DataType( static_cast< ch* >( m_Alloc.AllocateBytes( ( size + sizeof( ch ) ) * sizeof( ch ) ) ) );
 
 		u32 bytesToNextChar = ValidChar( text );
 		u32 arrayPos = 0U;
@@ -2036,7 +2035,7 @@ namespace uti
 	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
 	void uti::UTF16String< ch, order, Allocator >::CreateEmptyString()
 	{
-		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( 1U ) );
+		m_pData = static_cast< ch* >( m_Alloc.AllocateBytes( sizeof( ch ) ) );
 		m_pData[ 0 ] = 0U;
 		m_uiSize = 0U;
 		m_uiCharCount = 0U;
@@ -2045,7 +2044,7 @@ namespace uti
 	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
 	u32 uti::UTF16String< ch, order, Allocator >::Size( void ) const
 	{
-		return m_uiSize;
+		return m_uiSize * sizeof( ch );
 	}
 
 	template < typename ch /*= short*/, ::uti::BinaryOrder order /*= ::uti::BinaryOrder::LittleEndian */, typename Allocator /*= DefaultAllocator */>
@@ -2082,7 +2081,7 @@ namespace uti
 			case 1U:
 				byte1 = _byteswap_ushort( *utfchar );
 				result = byte1;
-				// Second case using lead and trail surrogates	
+				// Second case using lead and trail surrogates
 			case 2U:
 				byte1 = _byteswap_ushort( *utfchar );
 				byte2 = _byteswap_ushort( *( utfchar + 1 ) );
@@ -2119,7 +2118,7 @@ namespace uti
 				// Easiest case, Value is equal to its code point so simply return the value.
 			case 1U:
 				result = *utfchar;
-				// Second case using lead and trail surrogates	
+				// Second case using lead and trail surrogates
 			case 2U:
 				byte1 = *utfchar;
 				byte2 = *( utfchar + 1 );
@@ -2142,12 +2141,12 @@ namespace uti
 	u32 uti::UTF16String< ch, order, Allocator >::Concat( const UTF16String< ch, order, Allocator >& rhs )
 	{
 		u32 newSize = m_uiSize + rhs.m_uiSize;
-		DataType newStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize * sizeof( ch ) + sizeof( ch ) ));
+		ch* newRawStringData = static_cast< ch* >( m_Alloc.AllocateBytes( newSize * sizeof( ch ) + sizeof( ch ) ));
 
-		std::memcpy( newStringData.Ptr(), m_pData.Ptr(), m_uiSize * sizeof( ch ));
-		std::memcpy( newStringData.Ptr() + m_uiSize, rhs.m_pData.Ptr(), rhs.m_uiSize * sizeof( ch ));
-		newStringData[ newSize ] = 0U;
-		m_pData = newStringData;
+		std::memcpy( newRawStringData, m_pData.Ptr(), m_uiSize * sizeof( ch ));
+		std::memcpy( newRawStringData + m_uiSize, rhs.m_pData.Ptr(), rhs.m_uiSize * sizeof( ch ));
+		newRawStringData[ newSize ] = 0U;
+		m_pData = newRawStringData;
 		m_uiSize = newSize;
 		m_uiCharCount += rhs.m_uiCharCount;
 		return newSize;
