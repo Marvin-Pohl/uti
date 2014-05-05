@@ -341,6 +341,8 @@ namespace uti
 
 		UTF8String( const UTF8String< ch, Allocator >& rhs );
 
+		UTF8String( const wchar_t* text );
+
 		~UTF8String();
 
 		UTF8String< ch, Allocator>& operator =( const UTF8String< ch, Allocator>& rhs );
@@ -484,6 +486,21 @@ namespace uti
 		*/
 		static inline u32 ExtractCodePoint( const ch* utfchar );
 
+		/**
+		\brief Takes a codepoint and converts it to utf-8.
+
+		\param codePoint The codepoint which will be converted
+		\param dst the target array at which position the converted data will be placed
+		(Use UTF8String::GetCodePointSize(u32) to get the needed size for the dst array)
+		*/
+		static inline void FromCodePoint( u32 codePoint, ch* dst );
+
+		/**
+		\brief Returns the needed size for the character to be converted in UTF-8 or 0 if it is an invalid codepoint.
+		
+		*/
+		static inline u32 GetCodePointSize( u32 codePoint );
+
 		friend class UTFByteIterator< ThisType >;
 		friend class UTFCharIterator< ThisType >;
 
@@ -506,6 +523,8 @@ namespace uti
 		u32 m_uiSize;
 		u32 m_uiCharCount;
 	};
+
+
 
 	enum class BinaryOrder
 	{
@@ -1552,6 +1571,12 @@ namespace uti
 	// UTF-8 String Implementation
 	//////////////////////////////////////////////////////////////////////////
 
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	uti::UTF8String<ch, Allocator>::UTF8String( const wchar_t* text )
+	{
+		// TODO
+	}
+
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
 	UTF8String<ch, Allocator>::UTF8String( void )
 	{
@@ -1587,6 +1612,69 @@ namespace uti
 		m_pData.SetNull();
 		m_uiSize = 0U;
 		m_uiCharCount = 0U;
+	}
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	u32 uti::UTF8String<ch, Allocator>::GetCodePointSize( u32 codePoint )
+	{
+		if( codePoint < 0x0080U )
+		{
+			return 1U;
+		}
+		else if( codePoint < 0x0800U )
+		{
+			return 2U;
+		}
+		else if( codePoint < 0x010000U )
+		{
+			return 3U;
+		}
+		else if( codePoint < 0x0200000U )
+		{
+			return 4U;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	void uti::UTF8String<ch, Allocator>::FromCodePoint( u32 codePoint, ch* dst )
+	{
+		u32 size = GetCodePointSize( codePoint );
+		static const u32 mask7bit = 0x7FU;
+		static const u32 mask6bit = 0x3FU;
+		static const u32 mask5bit = 0x1FU;
+		static const u32 mask4bit = 0x0FU;
+		static const u32 mask3bit = 0x07U;
+		static const u32 followBit = 0x80U;
+		if( size != 0U )
+		{
+			switch( size )
+			{
+			case 4:
+				dst[ 0 ] = (( codePoint >> 18U ) & mask3bit) | 0xF0U; // Add 11110000b to indicate 4 byte sequence
+				dst[ 1 ] = (( codePoint >> 12U ) & mask6bit) | followBit;
+				dst[ 2 ] = ( ( codePoint >> 6U ) & mask6bit ) | followBit;
+				dst[ 3 ] = ( ( codePoint ) & mask6bit ) | followBit;
+				break;
+			case 3:
+				dst[ 0 ] = ( ( codePoint >> 12U ) & mask4bit ) | 0xE0U; // Add 11100000b to indicate 3 byte sequence
+				dst[ 1 ] = ( ( codePoint >> 6U ) & mask6bit ) | followBit;
+				dst[ 2 ] = (( codePoint ) & mask6bit) | followBit;
+				break;
+			case 2:
+				dst[ 0 ] = ( ( codePoint >> 6U ) & mask5bit ) | 0xC0U; // Add 11000000b to indicate 2 byte sequence
+				dst[ 1 ] = ( ( codePoint ) & mask6bit ) | followBit;
+				break;
+			case 1:
+				dst[ 0 ] = ( codePoint & mask7bit ); // Mask the msb to indicate single byte sequence
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
