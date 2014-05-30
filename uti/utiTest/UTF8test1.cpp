@@ -222,6 +222,22 @@ namespace utiTest
 			Assert::AreEqual( String::ValidChar( surrogate ), 0U );
 		}
 
+		TEST_METHOD( WCharTest )
+		{
+			String myString = String::FromUTF16LE( L"" );
+			Assert::AreEqual( 0U, myString.CharCount(), L"Converting empty widechar didn't create an empty UTf string!" );
+			Assert::AreEqual( '\0', myString.Data()[ 0 ], L"Converting empty widechar didn't has an null terminated character!" );
+
+			myString = String::FromUTF16LE( L"WideChar" );
+			String myNotWideString( "WideChar" );
+
+			Assert::AreEqual( myNotWideString.Size(), myString.Size(), L"Converting empty widechar didn't produces correct size" );
+			Assert::AreEqual( myNotWideString.CharCount(), myString.CharCount(), L"Converting empty widechar didn't produces correct charCount" );
+
+			Assert::AreEqual( myNotWideString, myString, L"Creating the same ascii text in ascii and unicode did not match" );
+
+		}
+
 		TEST_METHOD( CompleteCodePointTest )
 		{
 			std::ifstream file;

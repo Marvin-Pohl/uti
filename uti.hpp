@@ -243,7 +243,7 @@ namespace uti
 
 		UTFCharIterator& operator =( const UTFCharIterator< String >& it );
 
-		DataType& operator *( void );
+		DataType* operator *( void );
 
 		bool Valid( void ) const;
 
@@ -307,6 +307,11 @@ namespace uti
 		Iterator m_It;
 	};
 
+	enum class BinaryOrder
+	{
+		LittleEndian = 0x1,
+		BigEndian = 0x2
+	};
 
 	/**
 	\brief Class representing a valid UTF-8 string.
@@ -340,8 +345,6 @@ namespace uti
 		UTF8String( const ch* text );
 
 		UTF8String( const UTF8String< ch, Allocator >& rhs );
-
-		UTF8String( const wchar_t* text );
 
 		~UTF8String();
 
@@ -501,6 +504,37 @@ namespace uti
 		*/
 		static inline u32 GetCodePointSize( u32 codePoint );
 
+
+		
+		/**
+		\brief Takes an UTF-16 LE or BE string and converts it to UTF-8
+		
+		\param text The UTF-16 text which will be converted in to an UTF-8 string
+		\tparam order The byte order in which the text will be parsed
+
+		\return The converted UTF-8 string
+		*/
+		template< ::uti::BinaryOrder order >
+		static inline UTF8String<ch, Allocator> FromWideString( const wchar_t* text );
+
+		/**
+		\brief Takes an UTF-16LE string and converts it to UTF-8.
+		
+		\param text The UTF-16LE string which will be converted into UTF-8
+		
+		\return The string converted into UTF-8
+		*/
+		static inline UTF8String<ch, Allocator> FromUTF16LE( const wchar_t* text ); 
+		
+		/**
+		\brief Takes an UTF-16BE string and converts it to UTF-8.
+
+		\param text The UTF-16BE string which will be converted into UTF-8
+
+		\return The string converted into UTF-8
+		*/
+		static inline UTF8String<ch, Allocator> FromUTF16BE( const wchar_t* text );
+
 		friend class UTFByteIterator< ThisType >;
 		friend class UTFCharIterator< ThisType >;
 
@@ -522,14 +556,6 @@ namespace uti
 		Allocator m_Alloc;
 		u32 m_uiSize;
 		u32 m_uiCharCount;
-	};
-
-
-
-	enum class BinaryOrder
-	{
-		LittleEndian = 0x1,
-		BigEndian = 0x2
 	};
 
 	/**
@@ -1411,19 +1437,19 @@ namespace uti
 	}
 
 	template< typename String >
-	typename UTFCharIterator< String >::DataType& UTFCharIterator< String >::operator*( )
+	typename UTFCharIterator< String >::DataType* UTFCharIterator< String >::operator*( )
 	{
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( Valid() )
 		{
-			return *( m_String.m_pData.Ptr() + m_uiPos );
+			return ( m_String.m_pData.Ptr() + m_uiPos );
 		}
 		else
 		{
 			throw UTFException( "Iterator not dereferenceable", 0 );
 		}
 #else
-		return *( m_String.m_pData + m_uiPos );
+		return ( m_String.m_pData.Ptr() + m_uiPos );
 #endif
 
 	}
@@ -1570,13 +1596,6 @@ namespace uti
 	//////////////////////////////////////////////////////////////////////////
 	// UTF-8 String Implementation
 	//////////////////////////////////////////////////////////////////////////
-
-	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
-	uti::UTF8String<ch, Allocator>::UTF8String( const wchar_t* text )
-	{
-		// TODO
-	}
-
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
 	UTF8String<ch, Allocator>::UTF8String( void )
 	{
@@ -1613,6 +1632,67 @@ namespace uti
 		m_uiSize = 0U;
 		m_uiCharCount = 0U;
 	}
+
+	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
+	template< ::uti::BinaryOrder order >
+	static inline UTF8String<ch, Allocator>
+		uti::UTF8String<ch, Allocator>::FromWideString( const wchar_t* text )
+	{
+			UTF8String<ch, Allocator> tmpString;
+			UTF16String< wchar_t, order, Allocator > utf16String = UTF16String< wchar_t, order, Allocator >( text );
+			u32 curIndex = 0U;
+			u32 curSize = utf16String.CharCount() + sizeof( ch );
+			u32 curActualSize = 0U;
+			u32 size = 0U;
+			u32 codePoint = 0U;
+			tmpString.m_pData = static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize ) );
+
+			for( UTF16String< wchar_t, order, Allocator >::CharIterator iter = utf16String.CharBegin();
+				iter != utf16String.CharEnd();
+				++iter )
+			{
+				codePoint = UTF16String< wchar_t, order, Allocator >::ExtractCodePoint( *iter );
+				size = GetCodePointSize( codePoint );
+				if( curIndex + size > curSize )
+				{
+					DataType tmpData = static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize * 2U ) );
+					curSize *= 2;
+					memcpy( tmpData.Ptr(), tmpString.m_pData.Ptr(), curIndex );
+					tmpString.m_pData = tmpData;
+				}
+				FromCodePoint( codePoint, tmpString.m_pData.Ptr() + curIndex );
+				curActualSize += size;
+				curIndex += size;
+
+			}
+
+			if( curIndex >= curSize )
+			{
+				DataType tmpData = static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize + sizeof( ch ) ) );
+				curSize += sizeof( ch );
+				memcpy( tmpData.Ptr(), tmpString.m_pData.Ptr(), curActualSize );
+				tmpString.m_pData = tmpData;
+
+			}
+			tmpString.m_pData[ curIndex ] = 0U;
+			tmpString.m_uiSize = curActualSize;
+			tmpString.m_uiCharCount = utf16String.CharCount();
+			return tmpString;
+	}
+
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTF8String<ch, Allocator> uti::UTF8String<ch, Allocator>::FromUTF16BE( const wchar_t* text )
+	{
+		return FromWideString< ::uti::BinaryOrder::BigEndian >( text );
+	}
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTF8String<ch, Allocator> uti::UTF8String<ch, Allocator>::FromUTF16LE( const wchar_t* text )
+	{
+		return FromWideString< ::uti::BinaryOrder::LittleEndian >( text );
+	}
+
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	u32 uti::UTF8String<ch, Allocator>::GetCodePointSize( u32 codePoint )
@@ -2169,6 +2249,7 @@ namespace uti
 			case 1U:
 				byte1 = _byteswap_ushort( *utfchar );
 				result = byte1;
+				break;
 				// Second case using lead and trail surrogates
 			case 2U:
 				byte1 = _byteswap_ushort( *utfchar );
@@ -2206,6 +2287,7 @@ namespace uti
 				// Easiest case, Value is equal to its code point so simply return the value.
 			case 1U:
 				result = *utfchar;
+				break;
 				// Second case using lead and trail surrogates
 			case 2U:
 				byte1 = *utfchar;
@@ -2495,7 +2577,7 @@ namespace uti
 
 		u32 bytesToNextChar = ValidChar( text );
 		u32 arrayPos = 0U;
-		m_uiCharCount = bytesToNextChar > 0U ? 1U : 0U;
+		m_uiCharCount = ( bytesToNextChar > 0U && ( *text != 0U ) ) ? 1U : 0U;
 		for( u32 i = 0U; i < size; ++i )
 		{
 			if( bytesToNextChar == 0U )
