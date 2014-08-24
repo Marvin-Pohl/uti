@@ -10,22 +10,22 @@
 #define nullptr NULL
 #endif // DISABLE_CPP11
 
-#include "utiCommonHeader.hpp"
-#include "utiAllocator.hpp"
-#include "utiReferenceCounted.hpp"
-#include "utiByteIterator.hpp"
-#include "utiCharIterator.hpp"
-#include "utiReverseIterator.hpp"
-#include "utiUTF8String.hpp"
-#include "utiUTF16String.hpp"
+#include "uti/utiCommonHeader.hpp"
+#include "uti/utiAllocator.hpp"
+#include "uti/utiReferenceCounted.hpp"
+#include "uti/utiByteIterator.hpp"
+#include "uti/utiCharIterator.hpp"
+#include "uti/utiReverseIterator.hpp"
+#include "uti/utiUTF8String.hpp"
+#include "uti/utiUTF16String.hpp"
 
-#include "utiAllocator.inl"
-#include "utiReferenceCounted.inl"
-#include "utiByteIterator.inl"
-#include "utiCharIterator.inl"
-#include "utiReverseIterator.inl"
-#include "utiUTF8String.inl"
-#include "utiUTF16String.inl"
+#include "uti/utiAllocator.inl"
+#include "uti/utiReferenceCounted.inl"
+#include "uti/utiByteIterator.inl"
+#include "uti/utiCharIterator.inl"
+#include "uti/utiReverseIterator.inl"
+#include "uti/utiUTF8String.inl"
+#include "uti/utiUTF16String.inl"
 
 
 #ifdef DISABLE_CPP11
