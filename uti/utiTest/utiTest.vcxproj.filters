@@ -24,6 +24,30 @@
     <ClInclude Include="..\..\uti.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\utiAllocator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\utiCommonHeader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\utiReferenceCounted.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\utiByteIterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\utiCharIterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\utiReverseIterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\utiUTF8String.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\utiUTF16String.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -41,5 +65,28 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\utiAllocator.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\..\utiReferenceCounted.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\..\utiByteIterator.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\..\utiCharIterator.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\..\utiReverseIterator.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\..\utiUTF8String.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\..\utiUTF16String.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
