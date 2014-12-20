@@ -37,6 +37,9 @@ namespace uti
 
 		UTF8String( const UTF8String< ch, Allocator >& rhs );
 
+		UTF8String( const ReferenceCounted< ch, Allocator >& data, u32 size, u32 charSize );
+
+
 		~UTF8String();
 
 		UTF8String< ch, Allocator>& operator =( const UTF8String< ch, Allocator>& rhs );
@@ -53,6 +56,15 @@ namespace uti
 		\return The new Size of the string.
 		*/
 		u32 Concat( const UTF8String<ch, Allocator>& rhs );
+
+		/**
+		\brief Returns a substring from the beginning of this String until the given \c end parameter.
+
+		\param end The iterator at which location the Substring will stop.
+
+		\return A new String containing the given part of this string.
+		*/
+		inline UTF8String< ch, Allocator > Substr( const CharIterator& end ) const;
 
 
 		/**
@@ -248,5 +260,7 @@ namespace uti
 		u32 m_uiSize;
 		u32 m_uiCharCount;
 	};
+
+
 }
 #endif // utiUTF8String_h__

@@ -21,6 +21,7 @@ namespace uti
 
 		ReferenceCounted< T, Allocator >& operator =( const ReferenceCounted< T, Allocator >& refCount );
 		ReferenceCounted< T, Allocator >& operator =( ReferenceCounted< T, Allocator >&& refCount );
+		ReferenceCounted< T, Allocator >& operator =( T* ptr );
 
 		bool operator ==( const ReferenceCounted< T, Allocator >& rhs ) const;
 		bool operator !=( const ReferenceCounted< T, Allocator >& rhs ) const;

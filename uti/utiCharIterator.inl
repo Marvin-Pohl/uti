@@ -241,7 +241,7 @@ namespace uti
 	}
 
 	template< typename String >
-	typename UTFCharIterator< String >::DataType* UTFCharIterator< String >::operator*( )
+	typename UTFCharIterator< String >::DataType* UTFCharIterator< String >::operator*( ) const
 	{
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( Valid() )

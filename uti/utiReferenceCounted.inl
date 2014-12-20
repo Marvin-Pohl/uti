@@ -143,8 +143,9 @@ namespace uti
 	template< typename T, typename Allocator >
 	ReferenceCounted< T, Allocator >& ReferenceCounted< T, Allocator >::operator=( const ReferenceCounted< T, Allocator >& refCount )
 	{
-		if( m_Count != refCount.m_Count )
+		if( m_CountedPointer != refCount.m_CountedPointer )
 		{
+			DecRef();
 			m_CountedPointer = refCount.m_CountedPointer;
 
 			m_Count = refCount.m_Count;
@@ -154,6 +155,24 @@ namespace uti
 
 		return *this;
 	}
+
+
+	template< typename T, typename Allocator >
+	ReferenceCounted< T, Allocator >& uti::ReferenceCounted<T, Allocator>::operator=( T* ptr )
+	{
+		if (m_CountedPointer != ptr)
+		{
+			DecRef();
+
+			m_CountedPointer = ptr;
+			m_Count = static_cast< u32* >( m_Alloc.AllocateBytes( sizeof( u32 ) ) );
+			*m_Count = 1U;
+		}
+
+		return *this;
+	}
+
+
 
 	template< typename T, typename Allocator >
 	void ReferenceCounted< T, Allocator >::DecRef( void )
@@ -174,7 +193,6 @@ namespace uti
 	template< typename T, typename Allocator >
 	void ReferenceCounted< T, Allocator >::IncRef( void )
 	{
-		printf( "Inc" );
 		if( ( *m_Count ) > 0U )
 		{
 			++( *m_Count );

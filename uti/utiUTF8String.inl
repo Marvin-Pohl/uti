@@ -23,6 +23,15 @@ namespace uti
 
 	}
 
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	uti::UTF8String<ch, Allocator>::UTF8String( const ReferenceCounted< ch, Allocator >& data, u32 size, u32 charSize ) :
+		m_pData( data ),
+		m_uiSize( size ),
+		m_uiCharCount( charSize )
+	{
+	}
+
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
 	UTF8String<ch, Allocator>::UTF8String( const ch* text )
 	{
@@ -253,6 +262,31 @@ namespace uti
 		m_uiSize = newSize;
 		m_uiCharCount += rhs.m_uiCharCount;
 		return newSize;
+	}
+
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTF8String< ch, Allocator > uti::UTF8String<ch, Allocator>::Substr( const typename UTF8String< typename ch, typename Allocator>::CharIterator& endIt ) const 
+	{
+		ch* end = *endIt;
+		ch* begin = *CharBegin();
+		u32 length = (end - begin);
+
+		Allocator alloc(m_Alloc);
+
+		ReferenceCounted< ch , Allocator > newStringData = static_cast< ch* >( alloc.AllocateBytes( ( length + 1U ) * sizeof( ch ) ) );
+		std::memcpy( newStringData.Ptr(), m_pData.Ptr(), length * sizeof( ch ) );
+		newStringData[ length ] = 0U;
+		u32 charSize = 0U;
+		auto it = CharBegin();
+		auto endIterator = CharEnd();
+		while (it < endIt && it < endIterator)
+		{
+			++charSize;
+			++it;
+		}
+
+		return UTF8String< ch, Allocator >( newStringData, length, charSize );
 	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
