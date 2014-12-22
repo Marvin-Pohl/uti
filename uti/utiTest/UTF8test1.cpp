@@ -23,7 +23,7 @@ template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString(
 //}
 
 namespace utiTest
-{		
+{
 	TEST_CLASS( UTF8Test )
 	{
 	public:
@@ -202,7 +202,7 @@ namespace utiTest
 
 			}
 #endif // DEBUG
-			
+
 
 		}
 
@@ -211,7 +211,7 @@ namespace utiTest
 			String first( "Some" );
 			String second( "Test" );
 			String expected( "SomeTest" );
-			Assert::IsTrue( ( first + second ) == expected, 
+			Assert::IsTrue( ( first + second ) == expected,
 				( ToString( first + second ) + ToString( " does not match " ) + ToString( expected ) ).c_str() );
 		}
 
@@ -260,7 +260,7 @@ namespace utiTest
 
 				size_t pos = 0;
 
-				do 
+				do
 				{
 					file.read( content + pos, 1000 );
 					pos += (size_t)file.gcount();
@@ -269,10 +269,10 @@ namespace utiTest
 				if( pos < 4416047U ) //Exact Byte size of test.txt
 				{
 					Assert::Fail( (
-						std::wstring( L"Failed to read " ) + 
-						std::to_wstring( fileSize ) + 
-						std::wstring( L" Bytes of data, could only read " ) + 
-						std::to_wstring( pos ) + std::wstring( L" Bytes!" ) 
+						std::wstring( L"Failed to read " ) +
+						std::to_wstring( fileSize ) +
+						std::wstring( L" Bytes of data, could only read " ) +
+						std::to_wstring( pos ) + std::wstring( L" Bytes!" )
 						).c_str() );
 					return;
 				}
@@ -304,6 +304,23 @@ namespace utiTest
 
 				delete content;
 			}
+		}
+
+		TEST_METHOD( SubstrTest )
+		{
+			String string( "Hello World" );
+			String expected( "Hello" );
+
+			auto it = string.CharBegin();
+
+			for( size_t i = 0; i < 5; i++ )
+			{
+				++it;
+			}
+
+			String sub = string.Substr( it );
+
+			Assert::AreEqual( expected, sub, L"Substring does not match expected string." );
 		}
 
 	};
