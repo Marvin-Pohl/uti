@@ -82,15 +82,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\uti.hpp" />
-    <ClInclude Include="..\utiAllocator.hpp" />
-    <ClInclude Include="..\utiByteIterator.hpp" />
-    <ClInclude Include="..\utiCharIterator.hpp" />
-    <ClInclude Include="..\utiCommonHeader.hpp" />
-    <ClInclude Include="..\utiReferenceCounted.hpp" />
-    <ClInclude Include="..\utiReverseIterator.hpp" />
-    <ClInclude Include="..\utiUTF16String.hpp" />
-    <ClInclude Include="..\utiUTF8String.hpp" />
+    <ClInclude Include="..\uti.hpp" />
+    <ClInclude Include="..\uti\utiAllocator.hpp" />
+    <ClInclude Include="..\uti\utiByteIterator.hpp" />
+    <ClInclude Include="..\uti\utiCharIterator.hpp" />
+    <ClInclude Include="..\uti\utiCommonHeader.hpp" />
+    <ClInclude Include="..\uti\utiReferenceCounted.hpp" />
+    <ClInclude Include="..\uti\utiReverseIterator.hpp" />
+    <ClInclude Include="..\uti\utiUTF16String.hpp" />
+    <ClInclude Include="..\uti\utiUTF8String.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -112,13 +112,13 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\utiAllocator.inl" />
-    <None Include="..\utiByteIterator.inl" />
-    <None Include="..\utiCharIterator.inl" />
-    <None Include="..\utiReferenceCounted.inl" />
-    <None Include="..\utiReverseIterator.inl" />
-    <None Include="..\utiUTF16String.inl" />
-    <None Include="..\utiUTF8String.inl" />
+    <None Include="..\uti\utiAllocator.inl" />
+    <None Include="..\uti\utiByteIterator.inl" />
+    <None Include="..\uti\utiCharIterator.inl" />
+    <None Include="..\uti\utiReferenceCounted.inl" />
+    <None Include="..\uti\utiReverseIterator.inl" />
+    <None Include="..\uti\utiUTF16String.inl" />
+    <None Include="..\uti\utiUTF8String.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

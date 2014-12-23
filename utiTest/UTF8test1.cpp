@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "..\..\uti.hpp"
+#include "..\uti.hpp"
 #include <fstream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
