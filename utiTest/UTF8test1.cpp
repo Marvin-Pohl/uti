@@ -320,6 +320,10 @@ namespace utiTest
 
 			String sub = string.Substr( it );
 
+
+			Assert::AreNotEqual( string, sub, L"Substring does match original string!" );
+			Assert::AreEqual( 5U, sub.CharCount(), L"Char Size of substring does not match!" );
+			Assert::AreEqual( 5U, sub.Size(), L"Byte Size of substring does not match!" );
 			Assert::AreEqual( expected, sub, L"Substring does not match expected string." );
 		}
 
