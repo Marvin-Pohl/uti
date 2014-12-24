@@ -356,5 +356,30 @@ namespace utiTest
 			Assert::AreEqual( expected, sub, L"Substring does not match expected string." );
 		}
 
+		TEST_METHOD( SubstrFailTest )
+		{
+
+			String str1( "FirstString" );
+			String str2( "SecondString" );
+
+			auto beginIterator = str2.CharBegin();
+			auto endIterator = str2.CharEnd();
+
+			// Using wrong iterator from other string should return empty string
+			String sub = str1.Substr( beginIterator, endIterator );
+
+			Assert::AreEqual( 0U, sub.Size(), L"String with wrong iterator does not return empty string" );
+			Assert::AreNotEqual( str1, sub, L"Substring does match original string!" );
+			Assert::AreNotEqual( str2, sub, L"Substring does match second string!" );
+
+			// Using start Iterator which is greater than the end iterator should return empty string
+			sub = str1.Substr( str1.CharEnd(), str1.CharBegin());
+
+			Assert::AreEqual( 0U, sub.Size(), L"String with wrong iterator does not return empty string" );
+			Assert::AreNotEqual( str1, sub, L"Substring does match original string!" );
+			Assert::AreNotEqual( str2, sub, L"Substring does match second string!" );
+
+		}
+
 	};
 }
