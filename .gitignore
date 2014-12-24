@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+*.ipch
+*.opensdf
+*.sdf
+utiTest/Debug/
+utiTest/Release/
+*.suo
+*.vcxproj.user
+utiTest/TestResults/
