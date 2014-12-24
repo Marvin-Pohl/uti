@@ -32,11 +32,8 @@ namespace uti
 		typedef typename ::uti::ReferenceCounted< ch, Allocator > DataType;
 
 		UTF8String( void );
-
 		UTF8String( const ch* text );
-
 		UTF8String( const UTF8String< ch, Allocator >& rhs );
-
 		UTF8String( const ReferenceCounted< ch, Allocator >& data, u32 size, u32 charSize );
 
 
