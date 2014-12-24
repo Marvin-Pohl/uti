@@ -306,7 +306,7 @@ namespace utiTest
 			}
 		}
 
-		TEST_METHOD( SubstrTest )
+		TEST_METHOD( SubstrTestOneParam )
 		{
 			String string( "Hello World" );
 			String expected( "Hello" );
@@ -324,6 +324,35 @@ namespace utiTest
 			Assert::AreNotEqual( string, sub, L"Substring does match original string!" );
 			Assert::AreEqual( 5U, sub.CharCount(), L"Char Size of substring does not match!" );
 			Assert::AreEqual( 5U, sub.Size(), L"Byte Size of substring does not match!" );
+			Assert::AreEqual( expected, sub, L"Substring does not match expected string." );
+		}
+
+		TEST_METHOD( SubstrTestTwoParam )
+		{
+			String string( "Hello World" );
+			String expected( "Wo" );
+
+			auto beginIterator = string.CharBegin();
+
+			for( size_t i = 0; i < 6; i++ )
+			{
+				++beginIterator;
+			}
+
+			auto endIterator = beginIterator;
+			for( size_t i = 0; i < 2; i++ )
+			{
+				++endIterator;
+			}
+
+			String sub = string.Substr( beginIterator, endIterator );
+
+
+			Assert::AreNotEqual( string, sub, L"Substring does match original string!" );
+			Assert::AreEqual( 2U, sub.CharCount(), L"Char Size of substring does not match!" );
+			Assert::AreEqual( 2U, sub.Size(), L"Byte Size of substring does not match!" );
+			Assert::IsTrue( sub.Data()[ 0 ] == 'W' );
+			Assert::IsTrue( sub.Data()[ 1 ] == 'o' );
 			Assert::AreEqual( expected, sub, L"Substring does not match expected string." );
 		}
 

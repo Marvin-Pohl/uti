@@ -53,6 +53,7 @@ namespace uti
 
 		~UTFCharIterator();
 
+		friend StringType;
 
 	protected:
 	private:

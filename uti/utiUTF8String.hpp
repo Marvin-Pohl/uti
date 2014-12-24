@@ -66,6 +66,19 @@ namespace uti
 		*/
 		inline UTF8String< ch, Allocator > Substr( const CharIterator& end ) const;
 
+		/**
+		\brief Returns a substring from the given \c start of this String until the given \c end parameter.
+
+		If the start is bigger than the end an empty string will be returned.
+		If the iterator is invalid (e.g. not from this string) an empty string will be returned.
+
+		\param start The iterator at which location the Substring will start.
+		\param end The iterator at which location the Substring will stop.
+
+		\return A new String containing the given part of this string.
+		*/
+		inline UTF8String< ch, Allocator > Substr( const CharIterator& start ,const CharIterator& end ) const;
+
 
 		/**
 		\brief Returns a pointer to the data of the String.
@@ -260,6 +273,7 @@ namespace uti
 		u32 m_uiSize;
 		u32 m_uiCharCount;
 	};
+
 
 
 }
