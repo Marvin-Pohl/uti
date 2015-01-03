@@ -51,7 +51,7 @@
     <ClInclude Include="..\uti.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\uti\utiAllocatorPolicy.hpp">
+    <ClInclude Include="..\uti\utiRefCountPolicy.hpp">
       <Filter>Header Files\uti</Filter>
     </ClInclude>
   </ItemGroup>
