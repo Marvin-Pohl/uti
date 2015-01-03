@@ -84,7 +84,7 @@
   <ItemGroup>
     <ClInclude Include="..\uti.hpp" />
     <ClInclude Include="..\uti\utiAllocator.hpp" />
-    <ClInclude Include="..\uti\utiAllocatorPolicy.hpp" />
+    <ClInclude Include="..\uti\utiRefCountPolicy.hpp" />
     <ClInclude Include="..\uti\utiByteIterator.hpp" />
     <ClInclude Include="..\uti\utiCharIterator.hpp" />
     <ClInclude Include="..\uti\utiCommonHeader.hpp" />
