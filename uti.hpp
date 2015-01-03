@@ -12,6 +12,7 @@
 
 #include "uti/utiCommonHeader.hpp"
 #include "uti/utiAllocator.hpp"
+#include "uti/utiAllocatorPolicy.hpp"
 #include "uti/utiReferenceCounted.hpp"
 #include "uti/utiByteIterator.hpp"
 #include "uti/utiCharIterator.hpp"

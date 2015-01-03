@@ -75,7 +75,7 @@ namespace uti
 			size = GetCodePointSize( codePoint );
 			if( curIndex + size > curSize )
 			{
-				DataType tmpData = static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize * 2U ) );
+				DataType tmpData = DataType( static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize * 2U ) ) );
 				curSize *= 2;
 				memcpy( tmpData.Ptr(), tmpString.m_pData.Ptr(), curIndex );
 				tmpString.m_pData = tmpData;
@@ -88,7 +88,7 @@ namespace uti
 
 		if( curIndex >= curSize )
 		{
-			DataType tmpData = static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize + sizeof( ch ) ) );
+			DataType tmpData = DataType( static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize + sizeof( ch ) ) ) );
 			curSize += sizeof( ch );
 			memcpy( tmpData.Ptr(), tmpString.m_pData.Ptr(), curActualSize );
 			tmpString.m_pData = tmpData;
@@ -287,7 +287,7 @@ namespace uti
 
 		Allocator alloc( m_Alloc );
 
-		ReferenceCounted< ch, Allocator > newStringData = static_cast< ch* >( alloc.AllocateBytes( ( length + 1U ) * sizeof( ch ) ) );
+		ReferenceCounted< ch, Allocator > newStringData = DataType( static_cast< ch* >( alloc.AllocateBytes( ( length + 1U ) * sizeof( ch ) ) ) );
 		std::memcpy( newStringData.Ptr(), begin, length * sizeof( ch ) );
 		newStringData[ length ] = 0U;
 		u32 charSize = 0U;
