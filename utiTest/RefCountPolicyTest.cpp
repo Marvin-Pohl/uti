@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "../../uti.hpp"
+#include "../uti.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -44,7 +44,7 @@ namespace utiTest
 	TEST_CLASS(RefCountPolicyTest)
 	{
 	public:
-		
+
 		TEST_METHOD(CustomPolicy)
 		{
 			typedef uti::ReferenceCounted<uti::u32, uti::DefaultAllocator, TestRefCountPolicy> RefCountedTestType;

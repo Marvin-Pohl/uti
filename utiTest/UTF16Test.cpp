@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "..\..\uti.hpp"
+#include "..\uti.hpp"
 #include <fstream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -103,11 +103,11 @@ namespace utiTest
 			try
 			{
 				String string( ( const wchar_t* )nullptr );
-				
+
 				String string2 = string;
-				
+
 				String string3 = string + string2;
-				
+
 				Assert::IsTrue( string.Size() == 0 );
 				Assert::IsTrue( string.CharCount() == 0 );
 				Assert::IsTrue( string2.Size() == 0 );
@@ -222,7 +222,7 @@ namespace utiTest
 
 		TEST_METHOD( CompleteCodePointTest )
 		{
-			
+
 		}
 
 	};
