@@ -20,7 +20,7 @@ namespace uti
 		}
 		else
 		{
-			throw UTFException( "Iterator not decrementable", 0 );
+			UTI_FATAL( "Iterator not decrementable" );
 		}
 #else
 
@@ -46,7 +46,7 @@ namespace uti
 		}
 		else
 		{
-			throw UTFException( "Iterator not decrementable", 0 );
+			UTI_FATAL( "Iterator not decrementable" );
 		}
 #else
 
@@ -80,7 +80,7 @@ namespace uti
 		}
 		else
 		{
-			throw UTFException( "Iterator not incrementable", 0 );
+			UTI_FATAL( "Iterator not incrementable" );
 		}
 #else
 
@@ -114,7 +114,7 @@ namespace uti
 		}
 		else
 		{
-			throw UTFException( "Iterator not incrementable", 0 );
+			UTI_FATAL( "Iterator not incrementable" );
 		}
 #else
 
@@ -143,7 +143,7 @@ namespace uti
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
-			throw UTFException( "UTFIterator mismatch on > comparison", 0 );
+			UTI_FATAL( "UTFIterator mismatch on > comparison" );
 		}
 		else
 		{
@@ -161,7 +161,7 @@ namespace uti
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
-			throw UTFException( "UTFIterator mismatch on >= comparison", 0 );
+			UTI_FATAL( "UTFIterator mismatch on >= comparison" );
 		}
 		else
 		{
@@ -178,7 +178,7 @@ namespace uti
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
-			throw UTFException( "UTFIterator mismatch on < comparison", 0 );
+			UTI_FATAL( "UTFIterator mismatch on < comparison" );
 		}
 		else
 		{
@@ -195,7 +195,7 @@ namespace uti
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
-			throw UTFException( "UTFIterator mismatch on <= comparison", 0 );
+			UTI_FATAL( "UTFIterator mismatch on <= comparison" );
 		}
 		else
 		{
@@ -212,7 +212,7 @@ namespace uti
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
-			throw UTFException( "UTFIterator mismatch on != comparison", 0 );
+			UTI_FATAL( "UTFIterator mismatch on != comparison" );
 		}
 		else
 		{
@@ -229,7 +229,7 @@ namespace uti
 #if _ITERATOR_DEBUG_LEVEL == 2
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
-			throw UTFException( "UTFIterator mismatch on == comparison", 0 );
+			UTI_FATAL( "UTFIterator mismatch on == comparison" );
 		}
 		else
 		{
@@ -250,7 +250,7 @@ namespace uti
 		}
 		else
 		{
-			throw UTFException( "Iterator not dereferenceable", 0 );
+			UTI_FATAL( "Iterator not dereferenceable" );
 		}
 #else
 		return ( m_String.m_pData.Ptr() + m_uiPos );
