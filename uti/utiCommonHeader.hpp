@@ -75,11 +75,14 @@ namespace uti
 			::uti::DebugBreak();\
 		}\
 	} while( 0 )
+
 #endif // assert
-#ifdef UTI_CUSTOM_FATAL()
-#define UTI_FATAL( ... ) UTI_CUSTOM_FATAL( __VA_ARGS__ )
+
+#ifdef UTI_CUSTOM_FATAL
+#define UTI_FATAL UTI_CUSTOM_FATAL
 #else
-#define UTI_FATAL( ... ) UtiFatal( #__VA_ARGS__ )
+#define UTI_FATAL UtiFatal
+
 #endif // UTI_CUSTOM_FATAL
 
 
