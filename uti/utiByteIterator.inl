@@ -21,6 +21,7 @@ namespace uti
 		else
 		{
 			UTI_FATAL( "Iterator not decrementable" );
+			return *this;
 		}
 #else
 
@@ -42,6 +43,7 @@ namespace uti
 		else
 		{
 			UTI_FATAL( "Iterator not decrementable" );
+			return *this;
 		}
 #else
 
@@ -71,6 +73,7 @@ namespace uti
 		else
 		{
 			UTI_FATAL( "Iterator not incrementable" );
+			return *this;
 		}
 #else
 
@@ -92,6 +95,7 @@ namespace uti
 		else
 		{
 			UTI_FATAL( "Iterator not incrementable" );
+			return *this;
 		}
 #else
 
@@ -108,6 +112,7 @@ namespace uti
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
 			UTI_FATAL( "UTFIterator mismatch on > comparison" );
+			return false;
 		}
 		else
 		{
@@ -126,6 +131,7 @@ namespace uti
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
 			UTI_FATAL( "UTFIterator mismatch on >= comparison" );
+			return false;
 		}
 		else
 		{
@@ -143,6 +149,7 @@ namespace uti
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
 			UTI_FATAL( "UTFIterator mismatch on < comparison" );
+			return false;
 		}
 		else
 		{
@@ -160,6 +167,7 @@ namespace uti
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
 			UTI_FATAL( "UTFIterator mismatch on <= comparison" );
+			return false;
 		}
 		else
 		{
@@ -177,6 +185,7 @@ namespace uti
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
 			UTI_FATAL( "UTFIterator mismatch on != comparison" );
+			return false;
 		}
 		else
 		{
@@ -194,6 +203,7 @@ namespace uti
 		if( m_String.m_pData != rhs.m_String.m_pData )
 		{
 			UTI_FATAL( "UTFIterator mismatch on == comparison" );
+			return false;
 		}
 		else
 		{
@@ -215,6 +225,7 @@ namespace uti
 		else
 		{
 			UTI_FATAL( "Iterator not dereferenceable" );
+			return *( m_String.m_pData.Ptr() + m_uiPos );
 		}
 #else
 		return *( m_String.m_pData.Ptr() + m_uiPos );

@@ -1,18 +1,14 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 
-bool AssertTriggered = false;
 #define RESET_ASSERT AssertTriggered = false
 #ifdef assert
 #undef assert
 #endif // assert
 #define assert ( ... ) AssertTriggered = true
-#define FAIL_ON_ASSERT if(AssertTriggered) Assert::Fail()
-#define FAIL_ON_NO_ASSERT if(!AssertTriggered) Assert::Fail()
+#define FAIL_ON_ASSERT Assert::IsFalse(AssertTriggered)
+#define FAIL_ON_NO_ASSERT Assert::IsTrue(AssertTriggered)
 
-#define UTI_CUSTOM_FATAL( ... ) AssertTriggered = true
-
-#include "..\uti.hpp"
 #include <fstream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

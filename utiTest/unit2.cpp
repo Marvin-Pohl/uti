@@ -4,11 +4,13 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-//template __declspec( dllexport ) class uti::UTF8String<>;
+template __declspec( dllexport ) class uti::UTF8String<>;
 
-//template __declspec( dllexport ) class uti::UTF16String<>;
+template __declspec( dllexport ) class uti::UTF16String<>;
 
 typedef uti::UTF8String<> String;
+
+bool AssertTriggered = false;
 
 namespace utiTest
 {

@@ -50,11 +50,16 @@ namespace uti
 	@brief Similar to assert, but does not check if the expression is valid, just immediately stops the program
 
 	*/
-	inline void UtiFatal( const char* message)
+	void UtiFatal( const char* message );
+#ifndef UTI_CUSTOM_FATAL
+
+
+	inline void UtiFatal( const char* message )
 	{
 		printf( "Fatal Error: %s\n", message );
 		::uti::DebugBreak();
 	}
+#endif // UTI_CUSTOM_FATAL
 
 
 // Implements UTI_ASSERT when in debug
@@ -78,12 +83,7 @@ namespace uti
 
 #endif // assert
 
-#ifdef UTI_CUSTOM_FATAL
-#define UTI_FATAL UTI_CUSTOM_FATAL
-#else
 #define UTI_FATAL UtiFatal
-
-#endif // UTI_CUSTOM_FATAL
 
 
 #else // No assert in release mode
