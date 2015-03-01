@@ -54,6 +54,9 @@
     <ClInclude Include="..\uti\utiRefCountPolicy.hpp">
       <Filter>Header Files\uti</Filter>
     </ClInclude>
+    <ClInclude Include="..\uti\utiChar.h">
+      <Filter>Header Files\uti</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -95,6 +98,9 @@
       <Filter>Header Files\uti</Filter>
     </None>
     <None Include="..\uti\utiUTF16String.inl">
+      <Filter>Header Files\uti</Filter>
+    </None>
+    <None Include="..\uti\utiChar.inl">
       <Filter>Header Files\uti</Filter>
     </None>
   </ItemGroup>

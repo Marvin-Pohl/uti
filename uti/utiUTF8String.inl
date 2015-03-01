@@ -268,9 +268,18 @@ namespace uti
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	UTF8String< ch, Allocator > uti::UTF8String<ch, Allocator>::Substr( const typename UTF8String< typename ch, typename Allocator>::CharIterator& endIt ) const
 	{
-		return Substr( CharBegin(), endIt );
+		auto begin = CharBegin();
+		UTI_ASSERT( begin <= endIt && endIt <= CharEnd() );
+		return Substr( begin, endIt );
 	}
 
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTF8String< ch, Allocator > uti::UTF8String<ch, Allocator>::Substr( u32 start, u32 end ) const
+	{
+		UTI_ASSERT( start < CharCount() && end < CharCount() );
+		return Substr( UTF8String<ch, Allocator>::CharIterator( ( UTF8String& ) *this, start ), UTF8String<ch, Allocator>::CharIterator( ( UTF8String& ) *this, end ) );
+	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	UTF8String< ch, Allocator > uti::UTF8String<ch, Allocator>::Substr( const CharIterator& start, const CharIterator& endIt /*= CharEnd() */ ) const

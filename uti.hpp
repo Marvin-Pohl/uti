@@ -19,6 +19,7 @@
 #include "uti/utiReverseIterator.hpp"
 #include "uti/utiUTF8String.hpp"
 #include "uti/utiUTF16String.hpp"
+#include "uti/utiChar.h"
 
 #include "uti/utiAllocator.inl"
 #include "uti/utiReferenceCounted.inl"
@@ -27,6 +28,7 @@
 #include "uti/utiReverseIterator.inl"
 #include "uti/utiUTF8String.inl"
 #include "uti/utiUTF16String.inl"
+#include "uti/utiChar.inl"
 
 
 #ifdef DISABLE_CPP11

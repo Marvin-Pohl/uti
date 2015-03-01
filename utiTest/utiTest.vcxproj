@@ -84,6 +84,7 @@
   <ItemGroup>
     <ClInclude Include="..\uti.hpp" />
     <ClInclude Include="..\uti\utiAllocator.hpp" />
+    <ClInclude Include="..\uti\utiChar.h" />
     <ClInclude Include="..\uti\utiRefCountPolicy.hpp" />
     <ClInclude Include="..\uti\utiByteIterator.hpp" />
     <ClInclude Include="..\uti\utiCharIterator.hpp" />
@@ -116,6 +117,7 @@
   <ItemGroup>
     <None Include="..\uti\utiAllocator.inl" />
     <None Include="..\uti\utiByteIterator.inl" />
+    <None Include="..\uti\utiChar.inl" />
     <None Include="..\uti\utiCharIterator.inl" />
     <None Include="..\uti\utiReferenceCounted.inl" />
     <None Include="..\uti\utiReverseIterator.inl" />

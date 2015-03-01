@@ -16,6 +16,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 template __declspec( dllexport ) class uti::UTF8String < > ;
 
 typedef uti::UTF8String< > String;
+template __declspec( dllexport ) class uti::UTFChar < String > ;
 
 //template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString( String* str )
 //{
