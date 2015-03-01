@@ -79,7 +79,11 @@ namespace uti
 			printf("Assertion failed: " #__VA_ARGS__ "\n" );\
 			::uti::DebugBreak();\
 		}\
-	} while( 0 )
+		__pragma(warning(push))\
+		__pragma(warning( disable: 4127)) /* Disable condition is constant warning, because it is is the desired behavior */ \
+	} while( 0 )\
+	__pragma(warning(pop))\
+
 
 #endif // assert
 
