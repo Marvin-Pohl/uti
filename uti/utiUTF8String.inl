@@ -23,6 +23,15 @@ namespace uti
 
 	}
 
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	uti::UTF8String<ch, Allocator>::UTF8String( const ReferenceCounted< ch, Allocator >& data, u32 size, u32 charSize ) :
+		m_pData( data ),
+		m_uiSize( size ),
+		m_uiCharCount( charSize )
+	{
+	}
+
 	template < typename ch /*= char*/, typename Allocator /*= DefaultAllocator */>
 	UTF8String<ch, Allocator>::UTF8String( const ch* text )
 	{
@@ -66,7 +75,7 @@ namespace uti
 			size = GetCodePointSize( codePoint );
 			if( curIndex + size > curSize )
 			{
-				DataType tmpData = static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize * 2U ) );
+				DataType tmpData = DataType( static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize * 2U ) ) );
 				curSize *= 2;
 				memcpy( tmpData.Ptr(), tmpString.m_pData.Ptr(), curIndex );
 				tmpString.m_pData = tmpData;
@@ -79,7 +88,7 @@ namespace uti
 
 		if( curIndex >= curSize )
 		{
-			DataType tmpData = static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize + sizeof( ch ) ) );
+			DataType tmpData = DataType( static_cast< ch* >( tmpString.m_Alloc.AllocateBytes( curSize + sizeof( ch ) ) ) );
 			curSize += sizeof( ch );
 			memcpy( tmpData.Ptr(), tmpString.m_pData.Ptr(), curActualSize );
 			tmpString.m_pData = tmpData;
@@ -253,6 +262,53 @@ namespace uti
 		m_uiSize = newSize;
 		m_uiCharCount += rhs.m_uiCharCount;
 		return newSize;
+	}
+
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTF8String< ch, Allocator > uti::UTF8String<ch, Allocator>::Substr( const typename UTF8String< typename ch, typename Allocator>::CharIterator& endIt ) const
+	{
+		auto begin = CharBegin();
+		UTI_ASSERT( begin <= endIt && endIt <= CharEnd() );
+		return Substr( begin, endIt );
+	}
+
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTF8String< ch, Allocator > uti::UTF8String<ch, Allocator>::Substr( u32 start, u32 end ) const
+	{
+		UTI_ASSERT( start < CharCount() && end < CharCount() );
+		return Substr( UTF8String<ch, Allocator>::CharIterator( ( UTF8String& ) *this, start ), UTF8String<ch, Allocator>::CharIterator( ( UTF8String& ) *this, end ) );
+	}
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	UTF8String< ch, Allocator > uti::UTF8String<ch, Allocator>::Substr( const CharIterator& start, const CharIterator& endIt /*= CharEnd() */ ) const
+	{
+		// Early out on any input error
+		if( &endIt.m_String != this || &start.m_String != this || endIt <= start )
+		{
+			return UTF8String < ch, Allocator >();
+		}
+
+		ch* end = *endIt;
+		ch* begin = *start;
+		u32 length = ( end - begin );
+
+		Allocator alloc( m_Alloc );
+
+		ReferenceCounted< ch, Allocator > newStringData = DataType( static_cast< ch* >( alloc.AllocateBytes( ( length + 1U ) * sizeof( ch ) ) ) );
+		std::memcpy( newStringData.Ptr(), begin, length * sizeof( ch ) );
+		newStringData[ length ] = 0U;
+		u32 charSize = 0U;
+		auto it = start;
+		auto endIterator = CharEnd();
+		while( it < endIt && it < endIterator )
+		{
+			++charSize;
+			++it;
+		}
+
+		return UTF8String< ch, Allocator >( newStringData, length, charSize );
 	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>

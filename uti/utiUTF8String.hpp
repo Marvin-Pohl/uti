@@ -19,8 +19,10 @@ namespace uti
 	{
 	public:
 
-		typedef const ch ConstType;
 		typedef ch Type;
+		typedef ch* TypePtr;
+		typedef const ch ConstType;
+		typedef const ch* ConstTypePtr;
 		typedef Allocator AllocatorType;
 		typedef typename UTF8String< ch, Allocator> ThisType;
 
@@ -32,10 +34,10 @@ namespace uti
 		typedef typename ::uti::ReferenceCounted< ch, Allocator > DataType;
 
 		UTF8String( void );
-
 		UTF8String( const ch* text );
-
 		UTF8String( const UTF8String< ch, Allocator >& rhs );
+		UTF8String( const ReferenceCounted< ch, Allocator >& data, u32 size, u32 charSize );
+
 
 		~UTF8String();
 
@@ -53,6 +55,42 @@ namespace uti
 		\return The new Size of the string.
 		*/
 		u32 Concat( const UTF8String<ch, Allocator>& rhs );
+
+		/**
+		\brief Returns a substring from the beginning of this String until the given \c end parameter.
+
+		\param end The iterator at which location the Substring will stop.
+
+		\return A new String containing the given part of this string.
+		*/
+		inline UTF8String< ch, Allocator > Substr( const CharIterator& end ) const;
+
+		/**
+		\brief Returns a substring from the given \c start of this String until the given \c end parameter.
+
+		If the start is bigger than the end an empty string will be returned.
+		If the iterator is invalid (e.g. not from this string) an empty string will be returned.
+
+		\param start The iterator at which location the Substring will start.
+		\param end The iterator at which location the Substring will stop.
+
+		\return A new String containing the given part of this string.
+		*/
+		inline UTF8String< ch, Allocator > Substr( const CharIterator& start ,const CharIterator& end ) const;
+
+		/**
+		\brief Returns a substring from the given \c start of this String until the given \c end parameter.
+
+		If the start is bigger than the end an empty string will be returned.
+		If the iterator is invalid (e.g. not from this string) an empty string will be returned.
+
+		\param start The char index at which location the Substring will start might range from 0<start<end.
+		\param end The char index at which location the Substring will stop, might range from start<end<CharSize().
+
+		\return A new String containing the given part of this string.
+
+		*/
+		inline UTF8String< ch, Allocator > Substr( u32 start, u32 end ) const;
 
 
 		/**
@@ -248,5 +286,8 @@ namespace uti
 		u32 m_uiSize;
 		u32 m_uiCharCount;
 	};
+
+
+
 }
 #endif // utiUTF8String_h__

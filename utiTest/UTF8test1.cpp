@@ -1,13 +1,22 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "..\..\uti.hpp"
+
+#define RESET_ASSERT AssertTriggered = false
+#ifdef assert
+#undef assert
+#endif // assert
+#define assert ( ... ) AssertTriggered = true
+#define FAIL_ON_ASSERT Assert::IsFalse(AssertTriggered)
+#define FAIL_ON_NO_ASSERT Assert::IsTrue(AssertTriggered)
+
 #include <fstream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-template __declspec( dllexport ) class uti::UTF8String< >;
+template __declspec( dllexport ) class uti::UTF8String < > ;
 
 typedef uti::UTF8String< > String;
+template __declspec( dllexport ) class uti::UTFChar < String > ;
 
 //template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString( String* str )
 //{
@@ -23,16 +32,15 @@ template<> std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString(
 //}
 
 namespace utiTest
-{		
+{
 	TEST_CLASS( UTF8Test )
 	{
 	public:
 
 		TEST_METHOD( CTorTest )
 		{
-
-			try
 			{
+				RESET_ASSERT;
 				String::ReplacementChar = "|";
 				const char blah [] = { 0xFFu, 0xC0u, 0x00 };
 				String string( blah );
@@ -44,15 +52,10 @@ namespace utiTest
 				String test( excpected );
 
 				Assert::AreEqual( test, string );
+				FAIL_ON_ASSERT;
 			}
-			catch( ... )
 			{
-				Assert::Fail();
-			}
-
-
-			try
-			{
+				RESET_ASSERT;
 				const char blah [] = "Some Test";
 
 				String string( blah );
@@ -60,14 +63,10 @@ namespace utiTest
 				Assert::AreEqual( 9U, string.CharCount() );
 				Assert::AreEqual( 9U, string.Size() );
 
+				FAIL_ON_ASSERT;
 			}
-			catch( ... )
 			{
-				Assert::Fail();
-			}
-
-			try
-			{
+				RESET_ASSERT;
 				const char test [] = "Some Test";
 
 				String string1 = test;
@@ -86,35 +85,26 @@ namespace utiTest
 				}
 
 				Assert::AreEqual( 9U, iterations );
+				FAIL_ON_ASSERT;
 			}
-			catch( ... )
-			{
-				Assert::Fail();
-			}
-
 		}
 
 		TEST_METHOD( CTorFailTest )
 		{
-			try
-			{
-				String string( ( const char* )nullptr );
+			RESET_ASSERT;
+			String string( ( const char* )nullptr );
 
-				String string2 = string;
+			String string2 = string;
 
-				String string3 = string + string2;
+			String string3 = string + string2;
 
-				Assert::IsTrue( string.Size() == 0 );
-				Assert::IsTrue( string.CharCount() == 0 );
-				Assert::IsTrue( string2.Size() == 0 );
-				Assert::IsTrue( string2.CharCount() == 0 );
-				Assert::IsTrue( string3.Size() == 0 );
-				Assert::IsTrue( string3.CharCount() == 0 );
-			}
-			catch( ... )
-			{
-				Assert::Fail( L"Nullptr crashed the string constructor" );
-			}
+			Assert::IsTrue( string.Size() == 0 );
+			Assert::IsTrue( string.CharCount() == 0 );
+			Assert::IsTrue( string2.Size() == 0 );
+			Assert::IsTrue( string2.CharCount() == 0 );
+			Assert::IsTrue( string3.Size() == 0 );
+			Assert::IsTrue( string3.CharCount() == 0 );
+			FAIL_ON_ASSERT;
 		}
 
 		TEST_METHOD( IteratorTest )
@@ -124,19 +114,13 @@ namespace utiTest
 			unsigned int iterations = 0;
 			auto it = bla.Begin();
 
-#ifdef DEBUG
+#ifdef _DEBUG
 
 
-			try
-			{
-				it--;
+			RESET_ASSERT;
+			it--;
 
-				Assert::Fail();
-			}
-			catch( uti::UTFException& )
-			{
-
-			}
+			FAIL_ON_NO_ASSERT;
 #endif // DEBUG
 
 			for( ; it != bla.End(); ++it, ++iterations )
@@ -147,17 +131,13 @@ namespace utiTest
 
 			Assert::AreEqual( 4U, iterations );
 
-#ifdef DEBUG
-			try
-			{
-				it++;
+#ifdef _DEBUG
 
-				Assert::Fail();
-			}
-			catch( uti::UTFException& )
-			{
+			RESET_ASSERT;
+			it++;
 
-			}
+			FAIL_ON_NO_ASSERT;
+
 #endif // DEBUG
 
 		}
@@ -169,17 +149,12 @@ namespace utiTest
 			unsigned int iterations = 0;
 			auto it = bla.rBegin();
 
-#ifdef DEBUG
-			try
-			{
-				it--;
+#ifdef _DEBUG
 
-				Assert::Fail();
-			}
-			catch( uti::UTFException& )
-			{
+			RESET_ASSERT;
+			it--;
+			FAIL_ON_NO_ASSERT;
 
-			}
 #endif // DEBUG
 
 
@@ -190,19 +165,13 @@ namespace utiTest
 
 			Assert::AreEqual( 4U, iterations );
 
-#ifdef DEBUG
-			try
-			{
-				it++;
+#ifdef _DEBUG
+			RESET_ASSERT;
+			it++;
 
-				Assert::Fail();
-			}
-			catch( uti::UTFException& )
-			{
-
-			}
+			FAIL_ON_NO_ASSERT;
 #endif // DEBUG
-			
+
 
 		}
 
@@ -211,7 +180,7 @@ namespace utiTest
 			String first( "Some" );
 			String second( "Test" );
 			String expected( "SomeTest" );
-			Assert::IsTrue( ( first + second ) == expected, 
+			Assert::IsTrue( ( first + second ) == expected,
 				( ToString( first + second ) + ToString( " does not match " ) + ToString( expected ) ).c_str() );
 		}
 
@@ -251,7 +220,7 @@ namespace utiTest
 			{
 				file.seekg( 0, std::ios::end );
 
-				size_t fileSize = (size_t)file.tellg().seekpos();
+				size_t fileSize = ( size_t ) file.tellg().seekpos();
 
 				file.seekg( 0, std::ios::beg );
 
@@ -260,19 +229,19 @@ namespace utiTest
 
 				size_t pos = 0;
 
-				do 
+				do
 				{
 					file.read( content + pos, 1000 );
-					pos += (size_t)file.gcount();
-				 }while( !file.eof() && file.gcount() != 0 );
+					pos += ( size_t ) file.gcount();
+				} while( !file.eof() && file.gcount() != 0 );
 
 				if( pos < 4416047U ) //Exact Byte size of test.txt
 				{
 					Assert::Fail( (
-						std::wstring( L"Failed to read " ) + 
-						std::to_wstring( fileSize ) + 
-						std::wstring( L" Bytes of data, could only read " ) + 
-						std::to_wstring( pos ) + std::wstring( L" Bytes!" ) 
+						std::wstring( L"Failed to read " ) +
+						std::to_wstring( fileSize ) +
+						std::wstring( L" Bytes of data, could only read " ) +
+						std::to_wstring( pos ) + std::wstring( L" Bytes!" )
 						).c_str() );
 					return;
 				}
@@ -286,7 +255,7 @@ namespace utiTest
 					size_t length = String::ValidChar( content + i );
 					if( length == 0 )
 					{
-						Assert::Fail( (std::wstring( L"Invalid Char at position " ) + std::to_wstring( i )).c_str() );
+						Assert::Fail( ( std::wstring( L"Invalid Char at position " ) + std::to_wstring( i ) ).c_str() );
 						break;
 					}
 					else
@@ -304,6 +273,81 @@ namespace utiTest
 
 				delete content;
 			}
+		}
+
+		TEST_METHOD( SubstrTestOneParam )
+		{
+			String string( "Hello World" );
+			String expected( "Hello" );
+
+			auto it = string.CharBegin();
+
+			for( size_t i = 0; i < 5; i++ )
+			{
+				++it;
+			}
+
+			String sub = string.Substr( it );
+
+
+			Assert::AreNotEqual( string, sub, L"Substring does match original string!" );
+			Assert::AreEqual( 5U, sub.CharCount(), L"Char Size of substring does not match!" );
+			Assert::AreEqual( 5U, sub.Size(), L"Byte Size of substring does not match!" );
+			Assert::AreEqual( expected, sub, L"Substring does not match expected string." );
+		}
+
+		TEST_METHOD( SubstrTestTwoParam )
+		{
+			String string( "Hello World" );
+			String expected( "Wo" );
+
+			auto beginIterator = string.CharBegin();
+
+			for( size_t i = 0; i < 6; i++ )
+			{
+				++beginIterator;
+			}
+
+			auto endIterator = beginIterator;
+			for( size_t i = 0; i < 2; i++ )
+			{
+				++endIterator;
+			}
+
+			String sub = string.Substr( beginIterator, endIterator );
+
+
+			Assert::AreNotEqual( string, sub, L"Substring does match original string!" );
+			Assert::AreEqual( 2U, sub.CharCount(), L"Char Size of substring does not match!" );
+			Assert::AreEqual( 2U, sub.Size(), L"Byte Size of substring does not match!" );
+			Assert::IsTrue( sub.Data()[ 0 ] == 'W' );
+			Assert::IsTrue( sub.Data()[ 1 ] == 'o' );
+			Assert::AreEqual( expected, sub, L"Substring does not match expected string." );
+		}
+
+		TEST_METHOD( SubstrFailTest )
+		{
+
+			String str1( "FirstString" );
+			String str2( "SecondString" );
+
+			auto beginIterator = str2.CharBegin();
+			auto endIterator = str2.CharEnd();
+
+			// Using wrong iterator from other string should return empty string
+			String sub = str1.Substr( beginIterator, endIterator );
+
+			Assert::AreEqual( 0U, sub.Size(), L"String with wrong iterator does not return empty string" );
+			Assert::AreNotEqual( str1, sub, L"Substring does match original string!" );
+			Assert::AreNotEqual( str2, sub, L"Substring does match second string!" );
+
+			// Using start Iterator which is greater than the end iterator should return empty string
+			sub = str1.Substr( str1.CharEnd(), str1.CharBegin() );
+
+			Assert::AreEqual( 0U, sub.Size(), L"String with wrong iterator does not return empty string" );
+			Assert::AreNotEqual( str1, sub, L"Substring does match original string!" );
+			Assert::AreNotEqual( str2, sub, L"Substring does match second string!" );
+
 		}
 
 	};

@@ -14,8 +14,8 @@
 *.ipch
 *.opensdf
 *.sdf
-uti/utiTest/Debug/
-uti/utiTest/Release/
+utiTest/Debug/
+utiTest/Release/
 *.suo
 *.vcxproj.user
-uti/utiTest/TestResults/
+utiTest/TestResults/

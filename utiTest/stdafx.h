@@ -10,4 +10,17 @@
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
 
+#define UTI_CUSTOM_FATAL
+#include "../uti.hpp"
+
+extern bool AssertTriggered;
+
+namespace uti
+{
+	inline void UtiFatal( const char*)
+	{
+		AssertTriggered = true;
+	}
+}
+
 // TODO: reference additional headers your program requires here

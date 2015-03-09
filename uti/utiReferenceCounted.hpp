@@ -8,26 +8,27 @@ namespace uti
 	\brief Reference Counter class for copy on write functionality of the UTFString.
 
 	*/
-	template< typename T, typename Allocator >
+	template< typename T, typename Allocator, typename RefCountPolicy = DefaultRefCountPolicy >
 	class ReferenceCounted
 	{
 	public:
 		ReferenceCounted( void );
-		ReferenceCounted( T* pointer );
-		ReferenceCounted( const ReferenceCounted< T, Allocator > & refCount );
-		ReferenceCounted( ReferenceCounted< T, Allocator >&& refCount );
+		explicit ReferenceCounted( T* pointer );
+		ReferenceCounted( const ReferenceCounted< T, Allocator, RefCountPolicy > & refCount );
+		ReferenceCounted( ReferenceCounted< T, Allocator, RefCountPolicy >&& refCount );
 		~ReferenceCounted();
 
 
-		ReferenceCounted< T, Allocator >& operator =( const ReferenceCounted< T, Allocator >& refCount );
-		ReferenceCounted< T, Allocator >& operator =( ReferenceCounted< T, Allocator >&& refCount );
+		ReferenceCounted< T, Allocator, RefCountPolicy >& operator =( T* pointer );
+		ReferenceCounted< T, Allocator, RefCountPolicy >& operator =( const ReferenceCounted< T, Allocator, RefCountPolicy >& refCount );
+		ReferenceCounted< T, Allocator, RefCountPolicy >& operator =( ReferenceCounted< T, Allocator, RefCountPolicy >&& refCount );
 
-		bool operator ==( const ReferenceCounted< T, Allocator >& rhs ) const;
-		bool operator !=( const ReferenceCounted< T, Allocator >& rhs ) const;
+		bool operator ==( const ReferenceCounted< T, Allocator, RefCountPolicy >& rhs ) const;
+		bool operator !=( const ReferenceCounted< T, Allocator, RefCountPolicy >& rhs ) const;
 
-		T* operator ->( );
+		T& operator ->( );
 
-		T* operator *( );
+		T& operator *( );
 
 		T* Ptr( void ) const;
 

@@ -33,7 +33,7 @@ namespace uti
 
 		UTFCharIterator& operator =( const UTFCharIterator< String >& it );
 
-		DataType* operator *( void );
+		DataType* operator *( void ) const;
 
 		bool Valid( void ) const;
 
@@ -53,6 +53,7 @@ namespace uti
 
 		~UTFCharIterator();
 
+		friend StringType;
 
 	protected:
 	private:

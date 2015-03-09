@@ -2,7 +2,14 @@
 #ifndef utiCommonHeader_h__
 #define utiCommonHeader_h__
 #include <intrin.h>
-#include <exception>
+
+#define UTI_WINDOWS 1
+#define UTI_PLATFORM UTI_WINDOWS
+
+#ifdef UTI_WINDOWS
+#include <windows.h>
+#endif // UTI_WINDOWS
+
 
 namespace uti
 {
@@ -28,33 +35,70 @@ namespace uti
 	template < typename ch, typename Allocator >
 	class UTF8String;
 
-	class UTFException
-		: public std::exception
+	/**
+	@brief Calls the corresponding debug break function for reach platform
+
+	*/
+	inline void DebugBreak()
 	{
-	public:
+#if UTI_PLATFORM == UTI_WINDOWS
+		::DebugBreak();
+#endif // UTI_PLATFORM
+	}
 
-		inline UTFException( char const * const & what, int code ) :
-			std::exception( what, code )
-		{
-		}
+	/**
+	@brief Similar to assert, but does not check if the expression is valid, just immediately stops the program
 
-	protected:
-	private:
-	};
+	*/
+	void UtiFatal( const char* message );
+#ifndef UTI_CUSTOM_FATAL
 
-	class InvalidCharException
-		: public UTFException
+
+	inline void UtiFatal( const char* message )
 	{
-	public:
+		printf( "Fatal Error: %s\n", message );
+		::uti::DebugBreak();
+	}
+#endif // UTI_CUSTOM_FATAL
 
-		inline InvalidCharException( u32 m_uiPosition ) :
-			UTFException( "Invalid char detected!", ( int ) m_uiPosition )
-		{
-		}
 
-	protected:
-	private:
-	};
+// Implements UTI_ASSERT when in debug
+#if defined(_DEBUG) || defined(DEBUG)
+//////////////////////////////////////////////////////////////////////////
+// Debug Mode
+//////////////////////////////////////////////////////////////////////////
+#ifdef assert // Use the default assert if there is one defined
+#define UTI_ASSERT( ... ) assert( __VA_ARGS__ )
+#else // Otherwise implement our own
+#define UTI_ASSERT( ... ) \
+	do\
+		{\
+		auto result = __VA_ARGS__;\
+		if( result == false )\
+		{\
+			printf("Assertion failed: " #__VA_ARGS__ "\n" );\
+			::uti::DebugBreak();\
+		}\
+		__pragma(warning(push))\
+		__pragma(warning( disable: 4127)) /* Disable condition is constant warning, because it is is the desired behavior */ \
+	} while( 0 )\
+	__pragma(warning(pop))\
+
+
+#endif // assert
+
+#define UTI_FATAL UtiFatal
+
+
+#else // No assert in release mode
+//////////////////////////////////////////////////////////////////////////
+// Release Mode
+//////////////////////////////////////////////////////////////////////////
+#define UTI_ASSERT(...)
+#define UTI_FATAL( ... )
+#endif
+
+
 
 	enum class BinaryOrder
 	{
