@@ -38,7 +38,6 @@ namespace uti
 		UTF8String( const UTF8String< ch, Allocator >& rhs );
 		UTF8String( const ReferenceCounted< ch, Allocator >& data, u32 size, u32 charSize );
 
-
 		~UTF8String();
 
 		UTF8String< ch, Allocator>& operator =( const UTF8String< ch, Allocator>& rhs );
@@ -91,6 +90,13 @@ namespace uti
 
 		*/
 		inline UTF8String< ch, Allocator > Substr( u32 start, u32 end ) const;
+
+		/**
+		@brief Searches for the first occurrence of the given needle (using this string as haystack)
+		and returns the starting char index if any occurrence is found or -1 if no match has been found.
+		
+		*/
+		inline s32 FindFirst( const UTF8String< ch, Allocator > needle ) const;
 
 
 		/**

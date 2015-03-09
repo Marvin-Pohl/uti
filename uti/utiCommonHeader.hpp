@@ -14,6 +14,7 @@
 namespace uti
 {
 	typedef unsigned int u32;
+	typedef signed int s32;
 
 	template< bool condition, typename TrueType, typename FalseType >
 	struct if_

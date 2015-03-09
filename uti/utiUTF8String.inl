@@ -187,6 +187,27 @@ namespace uti
 	}
 
 	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
+	inline
+	s32 uti::UTF8String<ch, Allocator>::FindFirst( const UTF8String< ch, Allocator > needle ) const
+	{
+		auto begin = CharBegin();
+		auto end = CharEnd();
+
+		u32* jumpArray = static_cast< u32* >(m_Alloc.AllocateBytes( sizeof( u32 )* needle.CharCount() ));
+
+		u32 jumpSize = 1U;
+		u32 needleCharCount = needle.CharCount();
+		for( u32 i = 0U; i < needleCharCount; i++ )
+		{
+
+		}
+
+		m_Alloc.FreeBytes( jumpArray );
+		return -1;
+	}
+
+
+	template < typename ch /*= char*/, typename Allocator /*= ::uti::DefaultAllocator */>
 	u32 UTF8String<ch, Allocator>::Size( void ) const
 	{
 		return m_uiSize;
