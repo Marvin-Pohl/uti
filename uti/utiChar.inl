@@ -11,3 +11,17 @@ m_Size( size )
 	}
 }
 
+template < class StringType >
+inline
+typename uti::UTFChar<StringType>::ConstTypePtr uti::UTFChar<StringType>::Pointer() const
+{
+	return m_Address;
+}
+
+template < class StringType >
+inline
+uti::u32 uti::UTFChar<StringType>::Size() const
+{
+	return m_Size;
+}
+
