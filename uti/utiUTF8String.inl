@@ -197,9 +197,13 @@ namespace uti
 
 		u32 jumpSize = 1U;
 		u32 needleCharCount = needle.CharCount();
-		for( u32 i = 0U; i < needleCharCount; i++ )
+		for( u32 i = needleCharCount -1; i >= 0U; --i )
 		{
-
+			jumpSize = 1U;
+			for( u32 charIdx = i; charIdx >= 0; --charIdx )
+			{
+				//Todo check chars.
+			}
 		}
 
 		m_Alloc.FreeBytes( jumpArray );
