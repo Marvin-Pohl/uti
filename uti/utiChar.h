@@ -14,6 +14,24 @@ namespace uti
 		typedef typename StringType::TypePtr TypePtr;
 		typedef typename StringType::ConstTypePtr ConstTypePtr;
 
+		/**
+		\brief Creates an empty char wrapper, which is not initialized and should not be used directly.
+		Notice that IsValid might return true, even if it is actually not a valid char
+		
+		This is usually used by any kind of container or by pre-allocations to allocate the needed memory, 
+		before having the data available.
+		
+		*/
+		UTFChar();
+
+		/**
+		\brief Creates a new empty char wrapper, forcing the initialization of the UTFChar to a nullptr.
+
+		Calling IsValid() on this created instance will return false.
+		
+		\param EForceInit Dummy parameter indication forced initialization
+		*/
+		UTFChar( EForceInit );
 
 		/**
 		\brief Creates a new char wrapper identifying a single char inside an UTFString.
@@ -51,11 +69,20 @@ namespace uti
 		*/
 		bool operator !=( const UTFChar< StringType >& rhs ) const;
 
+		/**
+		@brief Checks if th wrapper actually wraps a char.
+		
+		@return bool \c true if the address wraps a char, \c false otherwise.
+		*/
+		bool IsValid() const;
+
 	protected:
 	private:
 		ConstTypePtr m_Address;
 		u32 m_Size;
 	};
+
+
 }
 
 #endif // utiChar_h__

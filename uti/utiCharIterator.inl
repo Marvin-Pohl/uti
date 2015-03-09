@@ -105,8 +105,8 @@ namespace uti
 			{
 				while( size == 0 && m_uiPos < m_String.m_uiSize )
 				{
-					size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
 					++m_uiPos;
+					size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
 				}
 			}
 
@@ -128,14 +128,44 @@ namespace uti
 		{
 			do
 			{
-				size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
 				++m_uiPos;
+				size = String::CharSize( m_String.m_pData.Ptr() + m_uiPos );
 			} while( size == 0 && m_uiPos < m_String.m_uiSize );
 		}
 
 		return *this;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 	}
+
+	template< typename StringType >
+	inline
+	UTFCharIterator<StringType>& UTFCharIterator<StringType>::operator+=( s32 offset )
+	{
+		if (offset < 0)
+		{
+			offset = -offset;
+			while( offset > 0 )
+			{
+				--this;
+			}
+		}
+		else
+		{
+			while( offset > 0 )
+			{
+				++this;
+			}
+		}
+	}
+
+	template< typename StringType >
+	inline
+	UTFCharIterator<StringType>& uti::UTFCharIterator<StringType>::operator-=( s32 offset )
+	{
+		return (( *this ) += -offset);
+	}
+
+
 
 	template< typename String >
 	bool UTFCharIterator< String >::operator>( const UTFCharIterator< String >& rhs ) const

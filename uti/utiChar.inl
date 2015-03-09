@@ -1,3 +1,4 @@
+#pragma once
 
 template < class StringType >
 inline
@@ -9,6 +10,27 @@ m_Size( size )
 	{
 		m_Size = StringType::CharSize( m_Address );
 	}
+}
+
+template < class StringType >
+inline
+bool uti::UTFChar<StringType>::IsValid() const
+{
+	return m_Address != nullptr;
+}
+
+template < class StringType >
+inline
+uti::UTFChar<StringType>::UTFChar(EForceInit) : 
+m_Address(nullptr),
+m_Size(0U)
+{
+}
+
+template < class StringType >
+inline
+uti::UTFChar<StringType>::UTFChar()
+{
 }
 
 template < class StringType >
@@ -26,6 +48,7 @@ uti::u32 uti::UTFChar<StringType>::Size() const
 }
 
 template < class StringType >
+inline
 bool uti::UTFChar<StringType>::operator==( const UTFChar< StringType >& rhs ) const
 {
 	// If the size is not equal, the chars must be different
@@ -60,13 +83,10 @@ bool uti::UTFChar<StringType>::operator==( const UTFChar< StringType >& rhs ) co
 	return true;
 }
 
-
 template < class StringType >
+inline
 bool uti::UTFChar<StringType>::operator!=( const UTFChar< StringType >& rhs ) const
 {
 	// Implement using negation of == operator
 	return !( *this == rhs );
 }
-
-
-

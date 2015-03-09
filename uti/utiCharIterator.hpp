@@ -47,6 +47,31 @@ namespace uti
 		UTFCharIterator< String >& operator ++( void );
 		UTFCharIterator< String > operator ++( int );
 
+		/**
+		@brief Moves the CharIterator by the given offset, if possible.
+
+		If the currentposition + offset ends out of bounds of the string (position < 0 || position >= string.CharCount())
+		an assert will trigger in debug mode)
+		
+		@param s32 offset The offset relative to the current position,
+		if negative it will move towards the beginning, otherwise the char iterator will move towards the end of the string.
+		@return UTFCharIterator& Reference to this iterator
+		*/
+		UTFCharIterator& operator +=( s32 offset );
+
+
+		/**
+		@brief Moves the CharIterator by the given offset, if possible.
+
+		If the currentposition - offset ends out of bounds of the string (position < 0 || position >= string.CharCount())
+		an assert will trigger in debug mode)
+
+		@param s32 offset The offset inverse relative to the current position,
+		if negative it will move towards the end, otherwise the char iterator will move towards the beginning of the string.
+		@return UTFCharIterator& Reference to this iterator
+		*/
+		UTFCharIterator& operator -=( s32 offset );
+
 
 		UTFCharIterator< String >& operator --( void );
 		UTFCharIterator< String > operator --( int );

@@ -16,6 +16,11 @@ namespace uti
 	typedef unsigned int u32;
 	typedef signed int s32;
 
+	enum class EForceInit
+	{
+		ForceInit
+	};
+
 	template< bool condition, typename TrueType, typename FalseType >
 	struct if_
 	{
