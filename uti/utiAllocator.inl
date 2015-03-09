@@ -9,12 +9,12 @@ namespace uti
 	// Default Allocator implementation
 	//////////////////////////////////////////////////////////////////////////
 
-	void* DefaultAllocator::AllocateBytes( u32 size )
+	void* DefaultAllocator::AllocateBytes( u32 size ) const
 	{
 		return new char[ size ];
 	}
 
-	void DefaultAllocator::FreeBytes( void* ptr )
+	void DefaultAllocator::FreeBytes( void* ptr ) const
 	{
 		delete ptr;
 	}

@@ -18,9 +18,9 @@ namespace uti
 	{
 	public:
 
-		virtual void* AllocateBytes( u32 count ) = 0;
+		virtual void* AllocateBytes( u32 count ) const = 0;
 
-		virtual void FreeBytes( void* ptr ) = 0;
+		virtual void FreeBytes( void* ptr ) const = 0;
 
 	protected:
 	private:
@@ -34,9 +34,9 @@ namespace uti
 	{
 	public:
 
-		inline virtual void* AllocateBytes( u32 size );
+		inline virtual void* AllocateBytes( u32 size ) const override;
 
-		inline virtual void FreeBytes( void* ptr );
+		inline virtual void FreeBytes( void* ptr ) const override;
 
 	protected:
 
