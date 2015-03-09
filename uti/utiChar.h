@@ -39,6 +39,18 @@ namespace uti
 		*/
 		u32 Size() const;
 
+		// Check for equality of chars at byte level.
+		bool operator ==( const UTFChar< StringType >& rhs ) const;
+		
+		/**
+		@brief Checks for inequality of two Chars, returns true if any byte of the chars do not match the other char,
+		the length of the chars do not match or one char is invalid
+		
+		@param const UTFChar< StringType > & rhs
+		@return bool
+		*/
+		bool operator !=( const UTFChar< StringType >& rhs ) const;
+
 	protected:
 	private:
 		ConstTypePtr m_Address;
